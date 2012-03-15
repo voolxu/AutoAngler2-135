@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using Styx;
 using Styx.Logic;
 using Styx.Logic.POI;
 using Styx.WoWInternals;
@@ -8,11 +9,11 @@ using Styx.WoWInternals.WoWObjects;
 
 namespace HighVoltz
 {
-    public class Utils
+    class Utils
     {
-        private static readonly LocalPlayer me = ObjectManager.Me;
+        private static readonly LocalPlayer Me = ObjectManager.Me;
         private static uint _ping = Lua.GetReturnVal<uint>("return GetNetStats()", 3);
-        private static readonly Stopwatch _pingSW = new Stopwatch();
+        private static readonly Stopwatch PingSW = new Stopwatch();
 
         public static bool IsLureOnPole
         {
@@ -32,13 +33,13 @@ namespace HighVoltz
         {
             get
             {
-                if (!_pingSW.IsRunning)
-                    _pingSW.Start();
-                if (_pingSW.ElapsedMilliseconds > 30000)
+                if (!PingSW.IsRunning)
+                    PingSW.Start();
+                if (PingSW.ElapsedMilliseconds > 30000)
                 {
                     _ping = Lua.GetReturnVal<uint>("return GetNetStats()", 3);
-                    _pingSW.Reset();
-                    _pingSW.Start();
+                    PingSW.Reset();
+                    PingSW.Start();
                 }
                 return _ping;
             }
@@ -46,12 +47,37 @@ namespace HighVoltz
 
         public static bool IsItemInBag(uint entry)
         {
-            return me.BagItems.Any(i => i.Entry == entry);
+            return Me.BagItems.Any(i => i.Entry == entry);
         }
 
         public static WoWItem GetIteminBag(uint entry)
         {
             return ObjectManager.Me.BagItems.FirstOrDefault(i => i.Entry == entry);
+        }
+
+        public static void EquipWeapon()
+        {
+            bool is2Hand = false;
+            // equip right hand weapon
+            uint mainHandID = AutoAngler.Instance.MySettings.MainHand;
+            WoWItem mainHand = ObjectManager.Me.Inventory.Equipped.MainHand;
+
+            if (mainHand == null || (mainHand.Entry != mainHandID && Utils.IsItemInBag(mainHandID)))
+            {
+                is2Hand = Utils.GetIteminBag(AutoAngler.Instance.MySettings.MainHand).ItemInfo.InventoryType ==
+                          InventoryType.TwoHandWeapon;
+                Utils.EquipItemByID(AutoAngler.Instance.MySettings.MainHand);
+            }
+
+            // equip left hand weapon
+            uint offhandID = AutoAngler.Instance.MySettings.OffHand;
+            WoWItem offhand = ObjectManager.Me.Inventory.Equipped.OffHand;
+
+            if ((!is2Hand && offhandID > 0 &&
+                 (offhand == null || (offhand.Entry != offhandID && Utils.IsItemInBag(offhandID)))))
+            {
+                Utils.EquipItemByID(AutoAngler.Instance.MySettings.OffHand);
+            }
         }
 
         public static void UseItemByID(int id)

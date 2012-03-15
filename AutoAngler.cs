@@ -1,12 +1,15 @@
 ﻿//!CompilerOption:Optimize:On
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 using System.Xml.Linq;
+using CommonBehaviors.Actions;
 using HighVoltz.Composites;
 using Levelbot.Actions.Death;
 using Levelbot.Decorators.Death;
@@ -88,11 +91,25 @@ namespace HighVoltz
             get { return PulseFlags.All; }
         }
 
+        readonly Stopwatch _pulseSW = new Stopwatch();
+
         public override Composite Root
         {
             get
             {
                 return _root ?? (_root = new PrioritySelector(
+                    new Action(ctx =>
+                                   {
+                                       if (!_pulseSW.IsRunning)
+                                           _pulseSW.Start();
+                                       if (_pulseSW.ElapsedMilliseconds > 1000 && StyxWoW.Me.IsCasting)
+                                       {
+                                           Err("Warning: It took {0} milliseconds to pulse.\nThis can cause missed bites. To fix try disabling all plugins",
+                                                _pulseSW.ElapsedMilliseconds);
+                                       }
+                                       _pulseSW.Reset(); _pulseSW.Start();
+                                       return RunStatus.Failure;
+                                   }),
                     // Is bot dead? if so, release and run back to corpse
                                              new Decorator(c => !_me.IsAlive,
                                                            new PrioritySelector(
@@ -271,7 +288,26 @@ namespace HighVoltz
         public override void Start()
         {
             _botStartTime = DateTime.Now;
+            _pulseSW.Reset();
             FishCaught = new Dictionary<string, uint>();
+        }
+
+        private DateTime _weaponCheckTimeStamp = DateTime.Now;
+
+        public override void Pulse()
+        {
+            if (DateTime.Now - _weaponCheckTimeStamp >= TimeSpan.FromSeconds(10))
+            {
+                //Log(DateTime.Now.ToString(CultureInfo.InvariantCulture));
+                var equiptedItem = ObjectManager.Me.Inventory.Equipped.MainHand;
+                if (Battlegrounds.IsInsideBattleground && (equiptedItem == null ||
+                        equiptedItem.ItemInfo.WeaponClass == WoWItemWeaponClass.FishingPole))
+                {
+                    Log("We are in a BG so lets put away that fishing pole");
+                    Utils.EquipWeapon();
+                }
+                _weaponCheckTimeStamp = DateTime.Now;
+            }
         }
 
         public override void Stop()
