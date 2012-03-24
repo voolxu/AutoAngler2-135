@@ -515,5 +515,9 @@ namespace HighVoltz
         {
             Logging.WriteDebug(Color.DodgerBlue, String.Format("AutoAngler[{0}]: {1}", Version, format), args);
         }
+
+        public static string R = @"
+//!CompilerOption:AddRef:Remoting.dll
+";
     }
 }
