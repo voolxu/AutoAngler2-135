@@ -54,7 +54,7 @@ namespace HighVoltz.Composites
             else
             {
                 if (!ObjectManager.Me.Mounted && Mount.ShouldMount(AutoAngler.CurrentPoint) && Mount.CanMount())
-                    Mount.MountUp();
+                    Mount.MountUp(() => AutoAngler.CurrentPoint);
                 Navigator.MoveTo(AutoAngler.CurrentPoint);
             }
             return RunStatus.Success;
