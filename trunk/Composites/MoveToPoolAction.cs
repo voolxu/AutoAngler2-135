@@ -290,7 +290,7 @@ namespace HighVoltz.Composites
                 else
                 {
                     if (!ObjectManager.Me.Mounted && Mount.ShouldMount(PoolPoints[0]) && Mount.CanMount())
-                        Mount.MountUp();
+                        Mount.MountUp(() => PoolPoints[0]);
                     MoveResult moveResult = Navigator.MoveTo(PoolPoints[0]);
                     if (moveResult == MoveResult.UnstuckAttempt ||
                         moveResult == MoveResult.PathGenerationFailed || moveResult == MoveResult.Failed)

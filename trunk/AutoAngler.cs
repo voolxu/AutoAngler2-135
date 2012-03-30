@@ -294,24 +294,26 @@ namespace HighVoltz
 
         private DateTime _weaponCheckTimeStamp = DateTime.Now;
 
-        public override void Pulse()
-        {
-            if (DateTime.Now - _weaponCheckTimeStamp >= TimeSpan.FromSeconds(10))
-            {
-                //Log(DateTime.Now.ToString(CultureInfo.InvariantCulture));
-                var equiptedItem = ObjectManager.Me.Inventory.Equipped.MainHand;
-                if (Battlegrounds.IsInsideBattleground && (equiptedItem == null ||
-                        equiptedItem.ItemInfo.WeaponClass == WoWItemWeaponClass.FishingPole))
-                {
-                    Log("We are in a BG so lets put away that fishing pole");
-                    Utils.EquipWeapon();
-                }
-                _weaponCheckTimeStamp = DateTime.Now;
-            }
-        }
+        //public override void Pulse()
+        //{
+        //    if (DateTime.Now - _weaponCheckTimeStamp >= TimeSpan.FromSeconds(10))
+        //    {
+        //        //Log(DateTime.Now.ToString(CultureInfo.InvariantCulture));
+        //        var equiptedItem = ObjectManager.Me.Inventory.Equipped.MainHand;
+        //        if (Battlegrounds.IsInsideBattleground && (equiptedItem == null ||
+        //                equiptedItem.ItemInfo.WeaponClass == WoWItemWeaponClass.FishingPole))
+        //        {
+        //            Log("We are in a BG so lets put away that fishing pole");
+        //            Utils.EquipWeapon();
+        //        }
+        //        _weaponCheckTimeStamp = DateTime.Now;
+        //    }
+        //}
 
         public override void Stop()
         {
+            Log("Equipping weapons");
+            Utils.EquipWeapon();
             Log("In {0} days, {1} hours and {2} minutes we have caught",
                 (DateTime.Now - _botStartTime).Days,
                 (DateTime.Now - _botStartTime).Hours,
