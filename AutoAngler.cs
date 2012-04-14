@@ -91,8 +91,7 @@ namespace HighVoltz
             get { return PulseFlags.All; }
         }
 
-        readonly Stopwatch _pulseSW = new Stopwatch();
-
+        private DateTime _pulseTimestamp;
         public override Composite Root
         {
             get
@@ -100,14 +99,11 @@ namespace HighVoltz
                 return _root ?? (_root = new PrioritySelector(
                     new Action(ctx =>
                                    {
-                                       if (!_pulseSW.IsRunning)
-                                           _pulseSW.Start();
-                                       if (_pulseSW.ElapsedMilliseconds > 1000 && StyxWoW.Me.IsCasting)
+                                       if (DateTime.Now - _pulseTimestamp > TimeSpan.FromSeconds(1))
                                        {
-                                           Err("Warning: It took {0} milliseconds to pulse.\nThis can cause missed bites. To fix try disabling all plugins",
-                                                _pulseSW.ElapsedMilliseconds);
+                                           Err("Warning: It took 1 second to pulse.\nThis can cause missed bites. To fix try disabling all plugins");
                                        }
-                                       _pulseSW.Reset(); _pulseSW.Start();
+                                       _pulseTimestamp = DateTime.Now;
                                        return RunStatus.Failure;
                                    }),
                     // Is bot dead? if so, release and run back to corpse
@@ -120,8 +116,17 @@ namespace HighVoltz
                                                                )),
                     // If bot is in combat call the CC routine
                                              new Decorator(c => _me.Combat && !_me.IsFlying,
-                                                 new PrioritySelector(
-                                                           new CombatAction(),
+                                                 new PrioritySelector(  // equip weapons since we're in combat.
+                                                           new Decorator(ret => StyxWoW.Me.Inventory.Equipped.MainHand == null
+                                                                               || StyxWoW.Me.Inventory.Equipped.MainHand.ItemInfo.WeaponClass == WoWItemWeaponClass.FishingPole,
+                                                                               new Action(ret => Utils.EquipWeapon())),
+                                                           // reset the 'MoveToPool' timer when in combat. 
+                                                           new Decorator(ret => BotPoi.Current != null && BotPoi.Current.Type == PoiType.Harvest, 
+                                                               new Action(ret => {
+                                                                   MoveToPoolAction.MoveToPoolSW.Reset();
+                                                                   MoveToPoolAction.MoveToPoolSW.Start();
+                                                                   return RunStatus.Failure; // move on down to the next behavior.
+                                                               })),
                                                            Bots.Grind.LevelBot.CreateCombatBehavior()
 
                                             )),
@@ -288,27 +293,11 @@ namespace HighVoltz
         public override void Start()
         {
             _botStartTime = DateTime.Now;
-            _pulseSW.Reset();
+            _pulseTimestamp = DateTime.Now;
             FishCaught = new Dictionary<string, uint>();
         }
 
         private DateTime _weaponCheckTimeStamp = DateTime.Now;
-
-        //public override void Pulse()
-        //{
-        //    if (DateTime.Now - _weaponCheckTimeStamp >= TimeSpan.FromSeconds(10))
-        //    {
-        //        //Log(DateTime.Now.ToString(CultureInfo.InvariantCulture));
-        //        var equiptedItem = ObjectManager.Me.Inventory.Equipped.MainHand;
-        //        if (Battlegrounds.IsInsideBattleground && (equiptedItem == null ||
-        //                equiptedItem.ItemInfo.WeaponClass == WoWItemWeaponClass.FishingPole))
-        //        {
-        //            Log("We are in a BG so lets put away that fishing pole");
-        //            Utils.EquipWeapon();
-        //        }
-        //        _weaponCheckTimeStamp = DateTime.Now;
-        //    }
-        //}
 
         public override void Stop()
         {

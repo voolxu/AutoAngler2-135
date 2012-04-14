@@ -58,7 +58,6 @@
     <Compile Include="AutoAnglerSettings.cs" />
     <None Include="SVN.template" />
     <Compile Include="Composites\ApplyLureAction.cs" />
-    <Compile Include="Composites\CombatAction.cs" />
     <Compile Include="Composites\AutoAnglerDecorator.cs" />
     <Compile Include="Composites\EquipPoleAction.cs" />
     <Compile Include="Composites\FaceWaterAction.cs" />
