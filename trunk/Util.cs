@@ -61,7 +61,6 @@ namespace HighVoltz
             // equip right hand weapon
             uint mainHandID = AutoAngler.Instance.MySettings.MainHand;
             WoWItem mainHand = ObjectManager.Me.Inventory.Equipped.MainHand;
-
             if (mainHand == null || (mainHand.Entry != mainHandID && Utils.IsItemInBag(mainHandID)))
             {
                 is2Hand = Utils.GetIteminBag(AutoAngler.Instance.MySettings.MainHand).ItemInfo.InventoryType ==
