@@ -94,12 +94,6 @@
     <PostBuildEvent>IF %25username%25==Highvoltz-VM (
 xcopy "$(ProjectDir)*.cs" "$(ProjectDir)..\..\Honorbuddy\Bots\AutoAngler2" /I /S /Y /D
 xcopy "$(ProjectDir)*.xml" "$(ProjectDir)..\..\Honorbuddy\Bots\AutoAngler2" /I /S /Y /D
-
-IF EXIST \\HIGHVOLTZ-VM\Buddy\Honorbuddy\Honorbuddy.exe (
-echo Copying files to VM
-xcopy "$(ProjectDir)*.cs" "Z:\Honorbuddy\Bots\AutoAngler2" /I /S /Y /D
-xcopy "$(ProjectDir)*.xml" "Z:\Honorbuddy\Bots\AutoAngler2" /I /S /Y /D
-)
 )</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
