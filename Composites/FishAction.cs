@@ -97,7 +97,7 @@ namespace HighVoltz.Composites
                 if (bobber != null)
                 {
                     // recast line if it's not close enough to pool
-                    if (AutoAngler.Instance.MySettings.Fly && pool != null &&
+                    if (AutoAngler.Instance.MySettings.Poolfishing && pool != null &&
                         bobber.Location.Distance(pool.Location) > 3.6f)
                     {
                         CastLine();
