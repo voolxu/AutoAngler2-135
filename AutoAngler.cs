@@ -99,9 +99,10 @@ namespace HighVoltz
                 return _root ?? (_root = new PrioritySelector(
                     new Action(ctx =>
                                    {
-                                       if (DateTime.Now - _pulseTimestamp > TimeSpan.FromSeconds(1))
+                                       var pulseTime = DateTime.Now - _pulseTimestamp;
+                                       if (pulseTime >= TimeSpan.FromSeconds(3))
                                        {
-                                           Err("Warning: It took 1 second to pulse.\nThis can cause missed bites. To fix try disabling all plugins");
+                                           Err("Warning: It took {0} seconds to pulse.\nThis can cause missed bites. To fix try disabling all plugins", pulseTime.TotalSeconds);
                                        }
                                        _pulseTimestamp = DateTime.Now;
                                        return RunStatus.Failure;
