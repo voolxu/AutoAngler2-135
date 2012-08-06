@@ -34,7 +34,7 @@ namespace HighVoltz.Composites
                 return RunStatus.Failure;
             }
             float speed = ObjectManager.Me.MovementInfo.CurrentSpeed;
-            float modifier = _settings.Fly ? 4f : 2f;
+            float modifier = _settings.Fly ? 5f : 2f;
             float precision = speed > 7 ? (modifier*speed)/7f : modifier;
             if (ObjectManager.Me.Location.Distance(AutoAngler.CurrentPoint) <= precision)
                 AutoAngler.CycleToNextPoint();
