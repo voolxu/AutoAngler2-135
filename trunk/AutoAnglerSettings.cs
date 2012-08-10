@@ -60,6 +60,12 @@ namespace HighVoltz
         , Category("Advanced")]
         public int MaxFailedCasts { get; set; }
 
+
+        [Setting, Styx.Helpers.DefaultValue(15f),
+         Description("When bot is within this distance from current hotspot then it cycles to next hotspot. flymode only")
+        , Category("Advanced")]
+        public float PathPrecision { get; set; }
+
         [Setting, Styx.Helpers.DefaultValue(false),
          Description("If set to true bot will 'ninja' nodes from other players.")
         , Category("Fishing")]
