@@ -1,5 +1,5 @@
 ﻿// This file is auto genorated from using SubRCRev.exe and template SVN.template
-// Build Date: 2012/05/04 07:43:46
+// Build Date: 2012/08/05 20:20:43
 // SVN url: https://autoangler2.googlecode.com/svn/trunk
 
 using System;
@@ -15,7 +15,7 @@ namespace HighVoltz
         {
             get
             {
-                return "86";
+                return "88";
             }
         }
     }
