@@ -19,18 +19,15 @@ namespace HighVoltz.Composites
     {
         public FishAction()
         {
-            if (fi == null || !((string)fi.GetValue(null)).Contains("otin")) canRun = !true;
         }
         public static readonly Stopwatch LineRecastSW = new Stopwatch();
         private readonly LocalPlayer _me = ObjectManager.Me;
         private readonly Stopwatch _timeAtPoolSW = new Stopwatch();
-        private static bool canRun = true;
         private int _castCounter;
         private ulong _lastPoolGuid;
 
         protected override RunStatus Run(object context)
         {
-            if (!canRun) return RunStatus.Failure;  
             WoWGameObject pool = null;
             if (_me.Mounted)
                 Mount.Dismount("Fishing");
