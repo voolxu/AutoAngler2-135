@@ -3,17 +3,15 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Styx;
 using Styx.Combat.CombatRoutine;
+using Styx.CommonBot;
+using Styx.CommonBot.POI;
 using Styx.Helpers;
-using Styx.Logic;
-using Styx.Logic.BehaviorTree;
-using Styx.Logic.Combat;
-using Styx.Logic.POI;
-using Styx.Logic.Pathing;
+using Styx.Pathing;
 using Styx.WoWInternals;
 using Styx.WoWInternals.WoWObjects;
 using Styx.WoWInternals.World;
-using TreeSharp;
-using Action = TreeSharp.Action;
+using Styx.TreeSharp;
+using Action = Styx.TreeSharp.Action;
 
 namespace HighVoltz.Composites
 {
@@ -94,7 +92,7 @@ namespace HighVoltz.Composites
                 // fire tracelines.. 
                 bool[] lavaRetVals = null;
                 WoWPoint[] slopeHits;
-                using (new FrameLock())
+                using (StyxWoW.Memory.AcquireFrame())
                 {
                     bool[] slopelinesRetVals;
                     GameWorld.MassTraceLine(slopetraces.ToArray(),

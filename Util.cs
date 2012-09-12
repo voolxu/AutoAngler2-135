@@ -2,8 +2,8 @@
 using System.Diagnostics;
 using System.Linq;
 using Styx;
-using Styx.Logic;
-using Styx.Logic.POI;
+using Styx.CommonBot;
+using Styx.CommonBot.POI;
 using Styx.WoWInternals;
 using Styx.WoWInternals.WoWObjects;
 
@@ -22,7 +22,8 @@ namespace HighVoltz
                 //if poolfishing, dont need lure say we have one
                 if (AutoAngler.Instance.MySettings.Poolfishing && !AutoAngler.FishAtHotspot)
                     return true;
-                return Lua.GetReturnValues("return GetWeaponEnchantInfo()")[0] == "1";
+                var ret = Lua.GetReturnValues("return GetWeaponEnchantInfo()");
+                return ret != null && ret.Count > 0 && ret[0]  == "1";
             }
         }
 

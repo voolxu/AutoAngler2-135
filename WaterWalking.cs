@@ -3,8 +3,8 @@ using System.Diagnostics;
 using System.Linq;
 using Styx;
 using Styx.Combat.CombatRoutine;
+using Styx.CommonBot;
 using Styx.Helpers;
-using Styx.Logic.Combat;
 using Styx.WoWInternals;
 using Styx.WoWInternals.WoWObjects;
 
@@ -73,7 +73,7 @@ namespace HighVoltz
             }
             if (ObjectManager.Me.IsSwimming)
             {
-                using (new FrameLock())
+                using (StyxWoW.Memory.AcquireFrame())
                 {
                     KeyboardManager.AntiAfk();
                     WoWMovement.Move(WoWMovement.MovementDirection.JumpAscend);

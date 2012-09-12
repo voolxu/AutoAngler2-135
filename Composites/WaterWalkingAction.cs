@@ -1,6 +1,7 @@
-﻿using Styx.WoWInternals;
+﻿using Styx.TreeSharp;
+using Styx.WoWInternals;
 using Styx.WoWInternals.WoWObjects;
-using TreeSharp;
+using Styx.TreeSharp;
 
 namespace HighVoltz.Composites
 {

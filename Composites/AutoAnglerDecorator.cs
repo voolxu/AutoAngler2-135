@@ -1,6 +1,6 @@
-﻿using Styx.Logic.Combat;
+﻿using Styx.CommonBot.Routines;
 using Styx.WoWInternals;
-using TreeSharp;
+using Styx.TreeSharp;
 
 namespace HighVoltz.Composites
 {

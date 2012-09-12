@@ -3,15 +3,14 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using Styx;
+using Styx.CommonBot;
+using Styx.CommonBot.POI;
 using Styx.Helpers;
-using Styx.Logic;
-using Styx.Logic.Combat;
-using Styx.Logic.POI;
-using Styx.Logic.Pathing;
+
 using Styx.WoWInternals;
 using Styx.WoWInternals.WoWObjects;
-using TreeSharp;
-using Action = TreeSharp.Action;
+using Styx.TreeSharp;
+using Action = Styx.TreeSharp.Action;
 
 namespace HighVoltz.Composites
 {
@@ -84,8 +83,10 @@ namespace HighVoltz.Composites
                 WoWGameObject bobber = null;
                 try
                 {
+                    var b = ObjectManager.GetObjectsOfType<WoWGameObject>().FirstOrDefault(o => o != null && o.IsValid && o.CreatedByGuid == _me.Guid);
+
                     bobber = ObjectManager.GetObjectsOfType<WoWGameObject>()
-                        .FirstOrDefault(o => o.IsValid && o.SubType == WoWGameObjectType.FishingBobber &&
+                        .FirstOrDefault(o => o.IsValid && o.SubType == WoWGameObjectType.FishingNode &&
                                              o.CreatedBy.Guid == _me.Guid);
                 }
                 catch (Exception)
