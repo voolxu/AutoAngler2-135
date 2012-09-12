@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Linq;
 using Styx;
-using Styx.Logic;
-using Styx.Logic.POI;
-using Styx.Logic.Profiles;
+using Styx.CommonBot;
+using Styx.CommonBot.POI;
+using Styx.CommonBot.Profiles;
 using Styx.WoWInternals;
 using Styx.WoWInternals.WoWObjects;
-using TreeSharp;
+using Styx.TreeSharp;
 using System.Reflection;
 
 namespace HighVoltz.Composites

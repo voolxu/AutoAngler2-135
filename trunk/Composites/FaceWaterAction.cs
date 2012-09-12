@@ -2,12 +2,12 @@
 using System.Diagnostics;
 using Styx;
 using Styx.Helpers;
-using Styx.Logic.Pathing;
+
 using Styx.WoWInternals;
 using Styx.WoWInternals.WoWObjects;
 using Styx.WoWInternals.World;
-using TreeSharp;
-using Action = TreeSharp.Action;
+using Styx.TreeSharp;
+using Action = Styx.TreeSharp.Action;
 
 namespace HighVoltz.Composites
 {

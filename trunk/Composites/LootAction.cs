@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
-using Styx.Logic.Inventory.Frames.LootFrame;
-using TreeSharp;
+using Styx.CommonBot.Frames;
+
+using Styx.TreeSharp;
 
 namespace HighVoltz.Composites
 {

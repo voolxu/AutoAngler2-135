@@ -1,9 +1,9 @@
 ﻿using System.Linq;
 using Styx;
-using Styx.Logic.BehaviorTree;
+using Styx.CommonBot;
 using Styx.WoWInternals;
 using Styx.WoWInternals.WoWObjects;
-using TreeSharp;
+using Styx.TreeSharp;
 
 namespace HighVoltz.Composites
 {
