@@ -104,7 +104,7 @@ namespace HighVoltz
 
         public static bool IsBobbing(this WoWFishingBobber bobber)
         {
-            return StyxWoW.Memory.Read<byte>(bobber.OwnerObject.BaseAddress + 0xC0, false) == 1;
+            return bobber.OwnerObject.AnimationState == 0;
         }
     }
 }
