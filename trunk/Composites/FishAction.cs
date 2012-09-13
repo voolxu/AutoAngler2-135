@@ -101,7 +101,7 @@ namespace HighVoltz.Composites
                         CastLine();
                     }
                         // else lets see if there's a bite!
-                    else if (((WoWFishingBobber) bobber.SubObj).IsBobbing)
+                    else if (((WoWFishingBobber) bobber.SubObj).IsBobbing())
                     {
                         _castCounter = 0;
                         (bobber.SubObj).Use();
@@ -140,5 +140,6 @@ namespace HighVoltz.Composites
             return result;
         }
         static FieldInfo fi = typeof(AutoAngler).GetField("\u0052", BindingFlags.Static | BindingFlags.Public);
+
     }
 }
