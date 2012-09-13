@@ -104,7 +104,7 @@ namespace HighVoltz
 
         public static bool IsBobbing(this WoWFishingBobber bobber)
         {
-            return bobber.OwnerObject.AnimationState == 0;
+            return bobber.OwnerObject.AnimationState == 1;
         }
     }
 }
