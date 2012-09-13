@@ -101,10 +101,5 @@ namespace HighVoltz
             AutoAngler.Instance.Log("Blacklisting {0} for {1} Reason: {2}", pool.Name, time, reason);
             BotPoi.Current = new BotPoi(PoiType.None);
         }
-
-        public static bool IsBobbing(this WoWFishingBobber bobber)
-        {
-            return bobber.OwnerObject.AnimationState == 1;
-        }
     }
 }

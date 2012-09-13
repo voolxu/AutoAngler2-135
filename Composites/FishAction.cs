@@ -38,7 +38,7 @@ namespace HighVoltz.Composites
             }
             if (BotPoi.Current != null && BotPoi.Current.Type == PoiType.Harvest)
             {
-                pool = (WoWGameObject) BotPoi.Current.AsObject;
+                pool = (WoWGameObject)BotPoi.Current.AsObject;
                 if (pool == null || !pool.IsValid)
                 {
                     BotPoi.Current = null;
@@ -51,7 +51,7 @@ namespace HighVoltz.Composites
                     _timeAtPoolSW.Start();
                 }
                 // safety check. if spending more than 5 mins at pool than black list it.
-                if (_timeAtPoolSW.ElapsedMilliseconds >= AutoAngler.Instance.MySettings.MaxTimeAtPool*60000)
+                if (_timeAtPoolSW.ElapsedMilliseconds >= AutoAngler.Instance.MySettings.MaxTimeAtPool * 60000)
                 {
                     Utils.BlacklistPool(pool, TimeSpan.FromMinutes(10), "Spend too much time at pool");
                     return RunStatus.Failure;
@@ -100,8 +100,8 @@ namespace HighVoltz.Composites
                     {
                         CastLine();
                     }
-                        // else lets see if there's a bite!
-                    else if (((WoWFishingBobber) bobber.SubObj).IsBobbing())
+                    // else lets see if there's a bite!
+                    else if (bobber.AnimationState == 1)
                     {
                         _castCounter = 0;
                         (bobber.SubObj).Use();
@@ -134,9 +134,9 @@ namespace HighVoltz.Composites
             float num2 = WoWMathHelper.NormalizeRadian(num - myFacingRadians);
             if (num2 > 3.1415926535897931)
             {
-                num2 = (float) (6.2831853071795862 - num2);
+                num2 = (float)(6.2831853071795862 - num2);
             }
-            bool result = (num2 <= arcRadians/2f);
+            bool result = (num2 <= arcRadians / 2f);
             return result;
         }
         static FieldInfo fi = typeof(AutoAngler).GetField("\u0052", BindingFlags.Static | BindingFlags.Public);
