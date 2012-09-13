@@ -9,7 +9,7 @@ using Styx.WoWInternals.WoWObjects;
 
 namespace HighVoltz
 {
-    class Utils
+    static class Utils
     {
         private static readonly LocalPlayer Me = ObjectManager.Me;
         private static uint _ping = Lua.GetReturnVal<uint>("return GetNetStats()", 3);
@@ -100,6 +100,11 @@ namespace HighVoltz
             Blacklist.Add(pool.Guid, time);
             AutoAngler.Instance.Log("Blacklisting {0} for {1} Reason: {2}", pool.Name, time, reason);
             BotPoi.Current = new BotPoi(PoiType.None);
+        }
+
+        public static bool IsBobbing(this WoWFishingBobber bobber)
+        {
+            return StyxWoW.Memory.Read<byte>(bobber.OwnerObject.BaseAddress + 0xC0, false) == 1;
         }
     }
 }
