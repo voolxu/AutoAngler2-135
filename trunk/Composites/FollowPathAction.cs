@@ -1,6 +1,6 @@
 ﻿using System;
 using Styx;
-using Styx.Combat.CombatRoutine;
+using Styx.CommonBot.Routines;
 using Styx.CommonBot;
 using Styx.Helpers;
 using Styx.Pathing;

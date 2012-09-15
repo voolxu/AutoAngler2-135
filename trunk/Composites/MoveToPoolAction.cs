@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using Styx;
-using Styx.Combat.CombatRoutine;
+using Styx.CommonBot.Routines;
 using Styx.CommonBot;
 using Styx.CommonBot.POI;
 using Styx.Helpers;
