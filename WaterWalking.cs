@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Linq;
 using Styx;
-using Styx.Combat.CombatRoutine;
+using Styx.CommonBot.Routines;
 using Styx.CommonBot;
 using Styx.Helpers;
 using Styx.WoWInternals;

@@ -52,8 +52,8 @@ namespace HighVoltz.Composites
                 //}
                 return true;
             }
-            AutoAngler.Instance.Err("No fishing pole found");
-            TreeRoot.Stop();
+          //  AutoAngler.Instance.Err("No fishing pole found");
+           // TreeRoot.Stop();
             return false;
         }
     }
