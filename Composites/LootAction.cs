@@ -2,6 +2,7 @@
 using Styx.CommonBot.Frames;
 
 using Styx.TreeSharp;
+using Styx.WoWInternals;
 
 namespace HighVoltz.Composites
 {
@@ -31,7 +32,8 @@ namespace HighVoltz.Composites
             if (_lootSw.IsRunning && _lootSw.ElapsedMilliseconds < 5000)
             {
                 // loot everything.
-                if (LootFrame.Instance != null && LootFrame.Instance.IsVisible)
+                //if (LootFrame.Instance != null && LootFrame.Instance.IsVisible)
+                if (Lua.GetReturnVal<bool>("return LootFrame:IsVisible()",0))
                 {
                     for (int i = 0; i < LootFrame.Instance.LootItems; i++)
                     {
