@@ -20,7 +20,7 @@ namespace HighVoltz.Composites
         {
         }
         public static readonly Stopwatch LineRecastSW = new Stopwatch();
-        private readonly LocalPlayer _me = ObjectManager.Me;
+        private readonly LocalPlayer _me = StyxWoW.Me;
         private readonly Stopwatch _timeAtPoolSW = new Stopwatch();
         private int _castCounter;
         private ulong _lastPoolGuid;

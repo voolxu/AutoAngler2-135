@@ -13,7 +13,7 @@ namespace HighVoltz.Composites
 {
     class FaceWaterAction : Action
     {
-        private readonly LocalPlayer _me = ObjectManager.Me;
+        private readonly LocalPlayer _me = StyxWoW.Me;
         const float PIx2 = 3.14159f * 2f;
         const int TraceStep = 20;
 

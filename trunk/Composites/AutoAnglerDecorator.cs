@@ -1,4 +1,5 @@
-﻿using Styx.CommonBot.Routines;
+﻿using Styx;
+using Styx.CommonBot.Routines;
 using Styx.WoWInternals;
 using Styx.TreeSharp;
 
@@ -12,7 +13,7 @@ namespace HighVoltz.Composites
 
         protected override bool CanRun(object context)
         {
-            return ObjectManager.Me.IsAlive && !ObjectManager.Me.Combat &&
+            return StyxWoW.Me.IsAlive && !StyxWoW.Me.Combat &&
                    !RoutineManager.Current.NeedRest;
         }
     }

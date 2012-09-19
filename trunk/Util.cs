@@ -11,7 +11,7 @@ namespace HighVoltz
 {
     static class Utils
     {
-        private static readonly LocalPlayer Me = ObjectManager.Me;
+        private static readonly LocalPlayer Me = StyxWoW.Me;
         private static uint _ping = Lua.GetReturnVal<uint>("return GetNetStats()", 3);
         private static readonly Stopwatch PingSW = new Stopwatch();
 
@@ -53,7 +53,7 @@ namespace HighVoltz
 
         public static WoWItem GetIteminBag(uint entry)
         {
-            return ObjectManager.Me.BagItems.FirstOrDefault(i => i.Entry == entry);
+            return StyxWoW.Me.BagItems.FirstOrDefault(i => i.Entry == entry);
         }
 
         public static void EquipWeapon()
@@ -61,7 +61,7 @@ namespace HighVoltz
             bool is2Hand = false;
             // equip right hand weapon
             uint mainHandID = AutoAngler.Instance.MySettings.MainHand;
-            WoWItem mainHand = ObjectManager.Me.Inventory.Equipped.MainHand;
+            WoWItem mainHand = StyxWoW.Me.Inventory.Equipped.MainHand;
             if (mainHand == null || (mainHand.Entry != mainHandID && Utils.IsItemInBag(mainHandID)))
             {
                 is2Hand = Utils.GetIteminBag(AutoAngler.Instance.MySettings.MainHand).ItemInfo.InventoryType ==
@@ -71,7 +71,7 @@ namespace HighVoltz
 
             // equip left hand weapon
             uint offhandID = AutoAngler.Instance.MySettings.OffHand;
-            WoWItem offhand = ObjectManager.Me.Inventory.Equipped.OffHand;
+            WoWItem offhand = StyxWoW.Me.Inventory.Equipped.OffHand;
 
             if ((!is2Hand && offhandID > 0 &&
                  (offhand == null || (offhand.Entry != offhandID && Utils.IsItemInBag(offhandID)))))

@@ -14,7 +14,7 @@ namespace HighVoltz.Composites
     public class FollowPathAction : Action
     {
 
-        private readonly LocalPlayer _me = ObjectManager.Me;
+        private readonly LocalPlayer _me = StyxWoW.Me;
         private readonly AutoAnglerSettings _settings = AutoAngler.Instance.MySettings;
 
         protected override RunStatus Run(object context)
@@ -23,7 +23,7 @@ namespace HighVoltz.Composites
                 return RunStatus.Success;
             //  dks can refresh water walking while flying around.
             if (AutoAngler.Instance.MySettings.UseWaterWalking &&
-                ObjectManager.Me.Class == WoWClass.DeathKnight && !WaterWalking.IsActive)
+                StyxWoW.Me.Class == WoWClass.DeathKnight && !WaterWalking.IsActive)
             {
                 WaterWalking.Cast();
             }
@@ -33,11 +33,11 @@ namespace HighVoltz.Composites
             {
                 return RunStatus.Failure;
             }
-            //float speed = ObjectManager.Me.MovementInfo.CurrentSpeed;
+            //float speed = StyxWoW.Me.MovementInfo.CurrentSpeed;
             //float modifier = _settings.Fly ? 5f : 2f;
             //float precision = speed > 7 ? (modifier*speed)/7f : modifier;
             float precision = StyxWoW.Me.IsFlying ? AutoAnglerSettings.Instance.PathPrecision : 3; 
-            if (ObjectManager.Me.Location.Distance(AutoAngler.CurrentPoint) <= precision)
+            if (StyxWoW.Me.Location.Distance(AutoAngler.CurrentPoint) <= precision)
                 AutoAngler.CycleToNextPoint();
             if (_settings.Fly)
             {
@@ -48,13 +48,13 @@ namespace HighVoltz.Composites
                     else if (_me.MovementInfo.IsAscending || _me.MovementInfo.JumpingOrShortFalling)
                         WoWMovement.MoveStop(WoWMovement.MovementDirection.JumpAscend);
                 }
-                if (!ObjectManager.Me.Mounted)
+                if (!StyxWoW.Me.Mounted)
                     Flightor.MountHelper.MountUp();
                 Flightor.MoveTo(AutoAngler.CurrentPoint);
             }
             else
             {
-                if (!ObjectManager.Me.Mounted && Mount.ShouldMount(AutoAngler.CurrentPoint) && Mount.CanMount())
+                if (!StyxWoW.Me.Mounted && Mount.ShouldMount(AutoAngler.CurrentPoint) && Mount.CanMount())
                     Mount.MountUp(() => AutoAngler.CurrentPoint);
                 Navigator.MoveTo(AutoAngler.CurrentPoint);
             }

@@ -49,7 +49,7 @@ namespace HighVoltz.Composites
 
         private bool NinjaCheck(WoWGameObject pool)
         {
-            if (pool.Guid == _lastPoolGuid || (pool.Distance2D <= 22 && !ObjectManager.Me.Mounted))
+            if (pool.Guid == _lastPoolGuid || (pool.Distance2D <= 22 && !StyxWoW.Me.Mounted))
                 return true;
             _lastPoolGuid = pool.Guid;
             bool nearbyPlayers = ObjectManager.GetObjectsOfType<WoWPlayer>(false, false).
