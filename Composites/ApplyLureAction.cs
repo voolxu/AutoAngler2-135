@@ -25,7 +25,7 @@ namespace HighVoltz.Composites
                                                                      };
 
         private readonly Stopwatch _lureRecastSW = new Stopwatch();
-        private readonly LocalPlayer _me = ObjectManager.Me;
+        private readonly LocalPlayer _me = StyxWoW.Me;
 
         protected override RunStatus Run(object context)
         {

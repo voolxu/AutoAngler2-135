@@ -9,7 +9,7 @@ namespace HighVoltz.Composites
 {
     public class EquipPoleAction : Action
     {
-        private readonly LocalPlayer _me = ObjectManager.Me;
+        private readonly LocalPlayer _me = StyxWoW.Me;
 
         protected override RunStatus Run(object context)
         {

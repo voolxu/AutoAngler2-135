@@ -18,7 +18,7 @@ namespace HighVoltz.Composites
 {
     public class VendorAction:Action
     {
-         LocalPlayer _me = ObjectManager.Me;
+         LocalPlayer _me = StyxWoW.Me;
 
          protected override RunStatus Run(object context)
          {
@@ -32,7 +32,7 @@ namespace HighVoltz.Composites
                      Flightor.MoveTo(WoWMathHelper.CalculatePointFrom(_me.Location, loc, 4));
                  else
                  {
-                     if (!ObjectManager.Me.Mounted && Mount.ShouldMount(loc) && Mount.CanMount())
+                     if (!StyxWoW.Me.Mounted && Mount.ShouldMount(loc) && Mount.CanMount())
                          Mount.MountUp(() => loc);
                      Navigator.MoveTo(WoWMathHelper.CalculatePointFrom(_me.Location, loc, 4));
                  }

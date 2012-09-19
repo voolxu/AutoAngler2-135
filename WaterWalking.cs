@@ -31,10 +31,10 @@ namespace HighVoltz
             get
             {
                 // DKs have 2 Path of Frost auras. only one can be stored in WoWAuras at any time. 
-                return ObjectManager.Me.Auras.Values.
+                return StyxWoW.Me.Auras.Values.
                            Count(a => (a.SpellId == 11319 || a.SpellId == 1706 || a.SpellId == 546) &&
                                       a.TimeLeft >= new TimeSpan(0, 0, 20)) > 0 ||
-                       ObjectManager.Me.HasAura("Path of Frost");
+                       StyxWoW.Me.HasAura("Path of Frost");
             }
         }
 
@@ -48,7 +48,7 @@ namespace HighVoltz
                 _recastSW.Reset();
                 _recastSW.Start();
                 int waterwalkingSpellID = 0;
-                switch (ObjectManager.Me.Class)
+                switch (StyxWoW.Me.Class)
                 {
                     case WoWClass.Priest:
                         waterwalkingSpellID = 1706;
@@ -71,7 +71,7 @@ namespace HighVoltz
                     casted = true;
                 }
             }
-            if (ObjectManager.Me.IsSwimming)
+            if (StyxWoW.Me.IsSwimming)
             {
                 using (StyxWoW.Memory.AcquireFrame())
                 {

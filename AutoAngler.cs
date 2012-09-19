@@ -25,7 +25,7 @@ using Styx.WoWInternals;
 using Styx.WoWInternals.WoWObjects;
 using Styx.TreeSharp;
 using Action = Styx.TreeSharp.Action;
-using Color = System.Drawing.Color;
+using Color = System.Windows.Media.Color;
 
 namespace HighVoltz
 {
@@ -43,7 +43,7 @@ namespace HighVoltz
         private static int _lastUkTagCallTime;
         private static int _currentIndex;
         public readonly Version Version = new Version(2, new Svn().Revision);
-        private readonly LocalPlayer _me = ObjectManager.Me;
+        private readonly LocalPlayer _me = StyxWoW.Me;
         public static readonly string BotPath = Utilities.AssemblyDirectory + @"\Bots\" + "AutoAngler2";
         private AutoAnglerSettings _settings;
 
@@ -145,7 +145,7 @@ namespace HighVoltz
                     // If bot needs to rest then call the CC rest behavior
                                              new Decorator(
                                                  c =>
-                                                 RoutineManager.Current.NeedRest && !ObjectManager.Me.IsCasting &&
+                                                 RoutineManager.Current.NeedRest && !StyxWoW.Me.IsCasting &&
                                                  !_me.IsFlying,
                                                  new PrioritySelector(
                     // if Rest Behavior exists use it..
@@ -398,7 +398,7 @@ namespace HighVoltz
                 {
                     WayPoints = profile.GrindArea.Hotspots.ConvertAll(hs => hs.Position);
                     WoWPoint closestPoint =
-                        WayPoints.OrderBy(u => u.Distance(ObjectManager.Me.Location)).FirstOrDefault();
+                        WayPoints.OrderBy(u => u.Distance(StyxWoW.Me.Location)).FirstOrDefault();
                     _currentIndex = WayPoints.FindIndex(w => w == closestPoint);
                 }
                 else

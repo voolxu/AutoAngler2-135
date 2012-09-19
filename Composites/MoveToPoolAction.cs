@@ -22,7 +22,7 @@ namespace HighVoltz.Composites
         public static readonly Stopwatch MoveToPoolSW = new Stopwatch();
         // used to auto blacklist a pool if it takes too long to get to a point.
 
-        private readonly LocalPlayer _me = ObjectManager.Me;
+        private readonly LocalPlayer _me = StyxWoW.Me;
         private readonly Stopwatch _movetoConcludingSW = new Stopwatch();
         private ulong _lastPoolGuid;
 
@@ -287,7 +287,7 @@ namespace HighVoltz.Composites
                 }
                 else
                 {
-                    if (!ObjectManager.Me.Mounted && Mount.ShouldMount(PoolPoints[0]) && Mount.CanMount())
+                    if (!StyxWoW.Me.Mounted && Mount.ShouldMount(PoolPoints[0]) && Mount.CanMount())
                         Mount.MountUp(() => PoolPoints[0]);
                     MoveResult moveResult = Navigator.MoveTo(PoolPoints[0]);
                     if (moveResult == MoveResult.UnstuckAttempt ||
