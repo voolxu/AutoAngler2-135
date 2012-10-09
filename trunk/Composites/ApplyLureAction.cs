@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Styx;
 using Styx.WoWInternals;
 using Styx.WoWInternals.WoWObjects;
@@ -52,6 +53,16 @@ namespace HighVoltz.Composites
                 Utils.UseItemByID(33820);
                 return true;
             }
+			
+			//Awesome panda lure
+			WoWItem pandalure = StyxWoW.Me.BagItems.FirstOrDefault(r => r.Entry == 85973);
+            if (pandalure != null)
+            {
+                AutoAngler.Instance.Log("Appling awesome panda lure");
+                Utils.UseItemByID(85973);
+                return true;
+            }
+			
             foreach (var kv in Lures)
             {
                 WoWItem lureInBag = Utils.GetIteminBag(kv.Key);
