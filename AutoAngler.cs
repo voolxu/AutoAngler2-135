@@ -47,6 +47,8 @@ namespace HighVoltz
         public static readonly string BotPath = Utilities.AssemblyDirectory + @"\Bots\" + "AutoAngler2";
         private AutoAnglerSettings _settings;
 
+        public static bool LootFrameIsOpen { get; private set; }
+
         public AutoAngler()
         {
             Instance = this;
@@ -132,9 +134,10 @@ namespace HighVoltz
                                                            new Decorator(ret => StyxWoW.Me.Inventory.Equipped.MainHand == null
                                                                                || StyxWoW.Me.Inventory.Equipped.MainHand.ItemInfo.WeaponClass == WoWItemWeaponClass.FishingPole,
                                                                                new Action(ret => Utils.EquipWeapon())),
-                                                           // reset the 'MoveToPool' timer when in combat. 
-                                                           new Decorator(ret => BotPoi.Current != null && BotPoi.Current.Type == PoiType.Harvest, 
-                                                               new Action(ret => {
+                    // reset the 'MoveToPool' timer when in combat. 
+                                                           new Decorator(ret => BotPoi.Current != null && BotPoi.Current.Type == PoiType.Harvest,
+                                                               new Action(ret =>
+                                                               {
                                                                    MoveToPoolAction.MoveToPoolSW.Reset();
                                                                    MoveToPoolAction.MoveToPoolSW.Start();
                                                                    return RunStatus.Failure; // move on down to the next behavior.
@@ -307,9 +310,14 @@ namespace HighVoltz
             _botStartTime = DateTime.Now;
             _pulseTimestamp = DateTime.Now;
             FishCaught = new Dictionary<string, uint>();
+            Lua.Events.AttachEvent("LOOT_OPENED", LootFrameOpenedHandler);
+            Lua.Events.AttachEvent("LOOT_CLOSED", LootFrameClosedHandler);
         }
 
-        private DateTime _weaponCheckTimeStamp = DateTime.Now;
+        private void LootFrameClosedHandler(object sender, LuaEventArgs args) { LootFrameIsOpen = false; }
+
+        private void LootFrameOpenedHandler(object sender, LuaEventArgs args) { LootFrameIsOpen = true; }
+
 
         public override void Stop()
         {
@@ -323,6 +331,8 @@ namespace HighVoltz
             {
                 Log("{0} x{1}", kv.Key, kv.Value);
             }
+            Lua.Events.DetachEvent("LOOT_OPENED", LootFrameOpenedHandler);
+            Lua.Events.DetachEvent("LOOT_CLOSED", LootFrameClosedHandler);
         }
 
         #region Profile
