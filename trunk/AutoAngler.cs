@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
 using System.Windows.Media;
@@ -44,7 +45,7 @@ namespace HighVoltz
         private static int _currentIndex;
         public readonly Version Version = new Version(2, new Svn().Revision);
         private readonly LocalPlayer _me = StyxWoW.Me;
-        public static readonly string BotPath = Utilities.AssemblyDirectory + @"\Bots\" + "AutoAngler2";
+        public static readonly string BotPath = GetBotPath();
         private AutoAnglerSettings _settings;
 
         public static bool LootFrameIsOpen { get; private set; }
@@ -527,6 +528,21 @@ namespace HighVoltz
         public void Debug(string format, params object[] args)
         {
             Logging.WriteDiagnostic(Colors.DodgerBlue, String.Format("AutoAngler[{0}]: {1}", Version, format), args);
+        }
+
+        static string GetBotPath()
+        {   // taken from Singular.
+            // bit of a hack, but location of source code for assembly is only.
+            var asmName = Assembly.GetExecutingAssembly().GetName().Name;
+            var len = asmName.LastIndexOf("_", StringComparison.Ordinal);
+            var folderName = asmName.Substring(0, len);
+
+            var botsPath = GlobalSettings.Instance.BotsPath;
+            if (!Path.IsPathRooted(botsPath))
+            {
+                botsPath = Path.Combine(Utilities.AssemblyDirectory, botsPath);
+            }
+            return Path.Combine(botsPath, folderName);
         }
     }
 }
