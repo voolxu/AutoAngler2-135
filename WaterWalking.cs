@@ -24,6 +24,7 @@ namespace HighVoltz
                        (SpellManager.HasSpell("Levitate") || // priest levitate
                         SpellManager.HasSpell("Water Walking") || // shaman water walking
                         SpellManager.HasSpell("Path of Frost") || // Dk Path of frost
+						SpellManager.HasSpell("Soulburn") || // Affliction Warlock
                         Utils.IsItemInBag(8827)); //isItemInBag(8827);
             }
         }
@@ -35,7 +36,7 @@ namespace HighVoltz
             {
                 // DKs have 2 Path of Frost auras. only one can be stored in WoWAuras at any time. 
 
-                return StyxWoW.Me.Auras.Values.Any(a => (StyxWoW.Me.HasAura("Levitate") || StyxWoW.Me.HasAura("Water Walking")) && a.TimeLeft >= new TimeSpan(0, 0, 20)) ||
+                return StyxWoW.Me.Auras.Values.Any(a => (StyxWoW.Me.HasAura("Levitate") || StyxWoW.Me.HasAura("Water Walking") || StyxWoW.Me.HasAura("Unending Breath")) && a.TimeLeft >= new TimeSpan(0, 0, 20)) ||
                        StyxWoW.Me.HasAura("Path of Frost");
             }
         }
@@ -61,9 +62,15 @@ namespace HighVoltz
                     case WoWClass.DeathKnight:
                         waterwalkingSpellID = 3714;
                         break;
+					case WoWClass.Warlock:
+						waterwalkingSpellID = 5697;
+						break;
                 }
                 if (SpellManager.CanCast(waterwalkingSpellID))
                 {
+					if (StyxWoW.Me.Class == WoWClass.Warlock)
+						SpellManager.Cast(74434); //cast Soulburn
+
                     SpellManager.Cast(waterwalkingSpellID);
                     casted = true;
                 }
