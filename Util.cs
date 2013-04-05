@@ -19,21 +19,24 @@ namespace HighVoltz
         {
             get
             {
-			
-				var lure = StyxWoW.Me.BagItems.FirstOrDefault(r => r.Entry == 85973);
-				if (AutoAngler.Instance.MySettings.Poolfishing && lure != null && !Me.HasAura(125167))
-				{
-					return false;
-				}
-			
-                //if poolfishing, dont need lure say we have one
-                if (AutoAngler.Instance.MySettings.Poolfishing && !AutoAngler.FishAtHotspot)
-                    return true;
-					
+                bool useHatLure = false;
 
-				
+                var head = Me.Inventory.GetItemBySlot((uint)WoWEquipSlot.Head);
+                if (head != null && (head.Entry == 88710 || head.Entry == 33820))
+                    useHatLure = true;
+
+                var lure = StyxWoW.Me.BagItems.FirstOrDefault(r => r.Entry == 85973);
+                if (AutoAngler.Instance.MySettings.Poolfishing && lure != null && !Me.HasAura(125167))
+                {
+                    return false;
+                }
+
+                //if poolfishing, dont need lure say we have one
+                if (AutoAngler.Instance.MySettings.Poolfishing && !useHatLure && !AutoAngler.FishAtHotspot)
+                    return true;
+
                 var ret = Lua.GetReturnValues("return GetWeaponEnchantInfo()");
-                return ret != null && ret.Count > 0 && ret[0]  == "1";
+                return ret != null && ret.Count > 0 && ret[0] == "1";
             }
         }
 

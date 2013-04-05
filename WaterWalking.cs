@@ -14,7 +14,7 @@ namespace HighVoltz
     {
         private static readonly Stopwatch _recastSW = new Stopwatch();
 
-        private static string[] _waterWalkingAbilities = {"Levitate", "Water Walking", "Path of Frost"};
+        private static string[] _waterWalkingAbilities = { "Levitate", "Water Walking", "Path of Frost" };
 
         public static bool CanCast
         {
@@ -24,8 +24,9 @@ namespace HighVoltz
                        (SpellManager.HasSpell("Levitate") || // priest levitate
                         SpellManager.HasSpell("Water Walking") || // shaman water walking
                         SpellManager.HasSpell("Path of Frost") || // Dk Path of frost
-						SpellManager.HasSpell("Soulburn") || // Affliction Warlock
-                        Utils.IsItemInBag(8827)); //isItemInBag(8827);
+                        SpellManager.HasSpell("Soulburn") || // Affliction Warlock
+                        Utils.IsItemInBag(8827) || //isItemInBag(8827);
+                        Utils.IsItemInBag(85500)); // Anglers Fishing Raft
             }
         }
 
@@ -36,7 +37,7 @@ namespace HighVoltz
             {
                 // DKs have 2 Path of Frost auras. only one can be stored in WoWAuras at any time. 
 
-                return StyxWoW.Me.Auras.Values.Any(a => (StyxWoW.Me.HasAura("Levitate") || StyxWoW.Me.HasAura("Water Walking") || StyxWoW.Me.HasAura("Unending Breath")) && a.TimeLeft >= new TimeSpan(0, 0, 20)) ||
+                return StyxWoW.Me.Auras.Values.Any(a => (StyxWoW.Me.HasAura("Levitate") || StyxWoW.Me.HasAura("Anglers Fishing Raft") || StyxWoW.Me.HasAura("Water Walking") || StyxWoW.Me.HasAura("Unending Breath")) && a.TimeLeft >= new TimeSpan(0, 0, 20)) ||
                        StyxWoW.Me.HasAura("Path of Frost");
             }
         }
@@ -62,20 +63,25 @@ namespace HighVoltz
                     case WoWClass.DeathKnight:
                         waterwalkingSpellID = 3714;
                         break;
-					case WoWClass.Warlock:
-						waterwalkingSpellID = 5697;
-						break;
+                    case WoWClass.Warlock:
+                        waterwalkingSpellID = 5697;
+                        break;
                 }
                 if (SpellManager.CanCast(waterwalkingSpellID))
                 {
-					if (StyxWoW.Me.Class == WoWClass.Warlock)
-						SpellManager.Cast(74434); //cast Soulburn
+                    if (StyxWoW.Me.Class == WoWClass.Warlock)
+                        SpellManager.Cast(74434); //cast Soulburn
 
                     SpellManager.Cast(waterwalkingSpellID);
                     casted = true;
                 }
                 WoWItem waterPot = Utils.GetIteminBag(8827);
                 if (waterPot != null && waterPot.Use())
+                {
+                    casted = true;
+                }
+                WoWItem fishingRaft = Utils.GetIteminBag(85500);
+                if (fishingRaft != null && fishingRaft.Use())
                 {
                     casted = true;
                 }
