@@ -37,7 +37,7 @@ namespace HighVoltz.Composites
                                        : null;
             if (pool != null)
             {
-                if (poiObj == null || poiObj.Entry != pool.Entry)
+                if (poiObj == null || !poiObj.IsValid)
                 {
                     BotPoi.Current = new BotPoi(pool, PoiType.Harvest);
                     AutoAngler.CycleToNextIfBehind(pool);
