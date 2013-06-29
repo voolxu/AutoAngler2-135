@@ -95,14 +95,8 @@ namespace HighVoltz
             get { return PulseFlags.All; }
         }
 
-        private bool _brokeOnce;
         public override void Pulse()
         {
-            if (!_brokeOnce && Debugger.IsAttached)
-            {
-                _brokeOnce = true;
-                Debugger.Break();
-            }
         }
 
         private DateTime _pulseTimestamp;
@@ -185,8 +179,8 @@ namespace HighVoltz
                     // mail and repair if bags are full or items have low durability. logout if profile doesn't have mailbox and vendor.
                                              new Decorator(c => _me.BagsFull || _me.DurabilityPercent <= 0.2 &&
                                                                 (BotPoi.Current == null ||
-                                                                 BotPoi.Current.Type != PoiType.Mail ||
-                                                                 BotPoi.Current.Type != PoiType.Repair ||
+                                                                 BotPoi.Current.Type != PoiType.Mail &&
+                                                                 BotPoi.Current.Type != PoiType.Repair &&
                                                                  BotPoi.Current.Type != PoiType.InnKeeper),
                                                            new Action(c =>
                                                                           {
@@ -199,26 +193,18 @@ namespace HighVoltz
                                                                                       ProfileManager.CurrentOuterProfile
                                                                                           .MailboxManager.
                                                                                           GetClosestMailbox();
-                                                                                  if (mbox != null &&
-                                                                                      !String.IsNullOrEmpty(
-                                                                                          CharacterSettings.Instance.
-                                                                                              MailRecipient))
+                                                                                  if (mbox != null && !String.IsNullOrEmpty(CharacterSettings.Instance.MailRecipient))
+                                                                                  {
                                                                                       BotPoi.Current = new BotPoi(mbox);
+                                                                                  }
                                                                                   else
                                                                                   {
-                                                                                      Vendor ven =
-                                                                                          ProfileManager.CurrentOuterProfile.
-                                                                                              VendorManager.
-                                                                                              GetClosestVendor();
+                                                                                      Vendor ven = ProfileManager.CurrentOuterProfile.VendorManager.GetClosestVendor();
                                                                                       if (ven != null)
-                                                                                          BotPoi.Current =
-                                                                                              new BotPoi(ven,
-                                                                                                         PoiType.Repair);
+                                                                                          BotPoi.Current = new BotPoi(ven, PoiType.Repair);
                                                                                       else
                                                                                           // we'll use this POI to hearth+Logout...
-                                                                                          BotPoi.Current =
-                                                                                              new BotPoi(
-                                                                                                  PoiType.InnKeeper);
+                                                                                          BotPoi.Current = new BotPoi(PoiType.InnKeeper);
                                                                                   }
                                                                               }
                                                                               return RunStatus.Failure;
@@ -265,6 +251,12 @@ namespace HighVoltz
             get { return new MainForm(); }
         }
 
+        readonly InventoryType[] _2HWeaponTypes = new[]
+                                       {
+                                           InventoryType.TwoHandWeapon,
+                                           InventoryType.Ranged,
+                                       };
+
         public override void Initialize()
         {
             try
@@ -272,8 +264,7 @@ namespace HighVoltz
                 WoWItem mainhand = (MySettings.MainHand != 0 ? Utils.GetIteminBag(MySettings.MainHand) : null) ??
                                    FindMainHand();
                 WoWItem offhand = MySettings.OffHand != 0 ? Utils.GetIteminBag(MySettings.OffHand) : null;
-                if (((mainhand != null && mainhand.ItemInfo.InventoryType != InventoryType.TwoHandWeapon) ||
-                     mainhand == null) && offhand == null)
+                if ((mainhand == null  || !_2HWeaponTypes.Contains(mainhand.ItemInfo.InventoryType)) && offhand == null)
                 {
                     offhand = FindOffhand();
                 }
