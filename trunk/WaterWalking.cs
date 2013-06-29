@@ -25,6 +25,7 @@ namespace HighVoltz
                         SpellManager.HasSpell("Water Walking") || // shaman water walking
                         SpellManager.HasSpell("Path of Frost") || // Dk Path of frost
                         SpellManager.HasSpell("Soulburn") || // Affliction Warlock
+                        StyxWoW.Me.HasAura("Still Water") || // hunter with water strider pet.
                         Utils.IsItemInBag(8827) || //isItemInBag(8827);
                         Utils.IsItemInBag(85500)); // Anglers Fishing Raft
             }
@@ -38,12 +39,15 @@ namespace HighVoltz
                 // DKs have 2 Path of Frost auras. only one can be stored in WoWAuras at any time. 
 
                 return StyxWoW.Me.Auras.Values.Any(a => (StyxWoW.Me.HasAura("Levitate") || StyxWoW.Me.HasAura("Anglers Fishing Raft") || StyxWoW.Me.HasAura("Water Walking") || StyxWoW.Me.HasAura("Unending Breath")) && a.TimeLeft >= new TimeSpan(0, 0, 20)) ||
-                       StyxWoW.Me.HasAura("Path of Frost");
+                       StyxWoW.Me.HasAura("Path of Frost") || StyxWoW.Me.HasAura("Surface Trot");
             }
         }
 
         public static bool Cast()
         {
+            WoWItem fishingRaft;
+            WoWItem waterPot;
+
             bool casted = false;
             if (!IsActive)
             {
@@ -66,22 +70,27 @@ namespace HighVoltz
                     case WoWClass.Warlock:
                         waterwalkingSpellID = 5697;
                         break;
+                    case WoWClass.Hunter:
+                        // cast Surface Trot if Water Strider pet is active.
+                        if (StyxWoW.Me.HasAura("Still Water"))
+                            waterwalkingSpellID = 126311;
+                        break;
                 }
-                if (SpellManager.CanCast(waterwalkingSpellID))
+                if (waterwalkingSpellID != 0 && (SpellManager.CanCast(waterwalkingSpellID) || StyxWoW.Me.HasAura("Still Water")))
                 {
                     if (StyxWoW.Me.Class == WoWClass.Warlock)
                         SpellManager.Cast(74434); //cast Soulburn
 
-                    SpellManager.Cast(waterwalkingSpellID);
+                    //SpellManager.Cast(waterwalkingSpellID);
+                    // use lua to cast spells because SpellManager.Cast can't handle pet spells.
+                    Lua.DoString("CastSpellByID ({0})", waterwalkingSpellID);
                     casted = true;
                 }
-                WoWItem waterPot = Utils.GetIteminBag(8827);
-                if (waterPot != null && waterPot.Use())
+                else if ((waterPot = Utils.GetIteminBag(8827)) != null && waterPot.Use())
                 {
                     casted = true;
                 }
-                WoWItem fishingRaft = Utils.GetIteminBag(85500);
-                if (fishingRaft != null && fishingRaft.Use())
+                else if ((fishingRaft = Utils.GetIteminBag(85500)) != null && fishingRaft.Use())
                 {
                     casted = true;
                 }
