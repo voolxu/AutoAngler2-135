@@ -1,4 +1,5 @@
 ﻿//!CompilerOption:Optimize:On
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,18 +11,19 @@ using System.Threading;
 using System.Windows.Forms;
 using System.Windows.Media;
 using System.Xml.Linq;
+using Bots.Grind;
 using CommonBehaviors.Actions;
 using HighVoltz.Composites;
 using Levelbot.Actions.Death;
 using Levelbot.Decorators.Death;
 using Styx;
 using Styx.Common;
+using Styx.Common.Helpers;
 using Styx.CommonBot;
 using Styx.CommonBot.POI;
 using Styx.CommonBot.Profiles;
 using Styx.CommonBot.Routines;
 using Styx.Helpers;
-
 using Styx.WoWInternals;
 using Styx.WoWInternals.WoWObjects;
 using Styx.TreeSharp;
@@ -43,12 +45,10 @@ namespace HighVoltz
         public static List<WoWPoint> WayPoints = new List<WoWPoint>();
         private static int _lastUkTagCallTime;
         private static int _currentIndex;
+        public static readonly string BotPath = GetBotPath();
         public readonly Version Version = new Version(2, new Svn().Revision);
         private readonly LocalPlayer _me = StyxWoW.Me;
-        public static readonly string BotPath = GetBotPath();
         private AutoAnglerSettings _settings;
-
-        public static bool LootFrameIsOpen { get; private set; }
 
         public AutoAngler()
         {
@@ -56,6 +56,8 @@ namespace HighVoltz
             BotEvents.Profile.OnNewOuterProfileLoaded += Profile_OnNewOuterProfileLoaded;
             Profile.OnUnknownProfileElement += Profile_OnUnknownProfileElement;
         }
+
+        public static bool LootFrameIsOpen { get; private set; }
 
         public static Dictionary<string, uint> FishCaught { get; private set; }
         public static AutoAngler Instance { get; private set; }
@@ -65,8 +67,10 @@ namespace HighVoltz
             get
             {
                 return _settings ?? (_settings = new AutoAnglerSettings(
-                                                     String.Format("{0}\\Settings\\AutoAngler\\AutoAngler-{1}",
-                                                                   Utilities.AssemblyDirectory, _me.Name)));
+                    String.Format(
+                        "{0}\\Settings\\AutoAngler\\AutoAngler-{1}",
+                        Utilities.AssemblyDirectory,
+                        _me.Name)));
             }
         }
 
@@ -75,13 +79,22 @@ namespace HighVoltz
             get
             {
                 return WayPoints != null && WayPoints.Count > 0
-                           ? WayPoints[_currentIndex]
-                           : WoWPoint.Zero;
+                    ? WayPoints[_currentIndex]
+                    : WoWPoint.Zero;
             }
         }
 
         public static bool FishAtHotspot { get; private set; }
+
         #region overrides
+
+        private readonly InventoryType[] _2HWeaponTypes =
+        {
+            InventoryType.TwoHandWeapon,
+            InventoryType.Ranged,
+        };
+
+        private DateTime _pulseTimestamp;
 
         private PrioritySelector _root;
 
@@ -95,149 +108,148 @@ namespace HighVoltz
             get { return PulseFlags.All; }
         }
 
-        public override void Pulse()
-        {
-        }
-
-        private DateTime _pulseTimestamp;
         public override Composite Root
         {
             get
             {
                 return _root ?? (_root = new PrioritySelector(
-                    new Action(ctx =>
-                                   {
-                                       var pulseTime = DateTime.Now - _pulseTimestamp;
-                                       if (pulseTime >= TimeSpan.FromSeconds(3))
-                                       {
-                                           Err("Warning: It took {0} seconds to pulse.\nThis can cause missed bites. To fix try disabling all plugins", pulseTime.TotalSeconds);
-                                       }
-                                       _pulseTimestamp = DateTime.Now;
-                                       return RunStatus.Failure;
-                                   }),
+                    CreateBehavior_CheckPulseTime(),
+                    CreateBehavior_AnitAfk(),
                     // Is bot dead? if so, release and run back to corpse
-                                             new Decorator(c => !_me.IsAlive,
-                                                           new PrioritySelector(
-                                                               new DecoratorNeedToRelease(new ActionReleaseFromCorpse()),
-                                                               new DecoratorNeedToMoveToCorpse(new ActionMoveToCorpse()),
-                                                               new DecoratorNeedToTakeCorpse(new ActionRetrieveCorpse()),
-                                                               new ActionSuceedIfDeadOrGhost()
-                                                               )),
+                    new Decorator(
+                        c => !_me.IsAlive,
+                        new PrioritySelector(
+                            new DecoratorNeedToRelease(new ActionReleaseFromCorpse()),
+                            new DecoratorNeedToMoveToCorpse(new ActionMoveToCorpse()),
+                            new DecoratorNeedToTakeCorpse(new ActionRetrieveCorpse()),
+                            new ActionSuceedIfDeadOrGhost()
+                            )),
                     // If bot is in combat call the CC routine
-                                             new Decorator(c => _me.Combat && !_me.IsFlying,
-                                                 new PrioritySelector(  // equip weapons since we're in combat.
-                                                           new Decorator(ret => StyxWoW.Me.Inventory.Equipped.MainHand == null
-                                                                               || StyxWoW.Me.Inventory.Equipped.MainHand.ItemInfo.WeaponClass == WoWItemWeaponClass.FishingPole,
-                                                                               new Action(ret => Utils.EquipWeapon())),
-                    // reset the 'MoveToPool' timer when in combat. 
-                                                           new Decorator(ret => BotPoi.Current != null && BotPoi.Current.Type == PoiType.Harvest,
-                                                               new Action(ret =>
-                                                               {
-                                                                   MoveToPoolAction.MoveToPoolSW.Reset();
-                                                                   MoveToPoolAction.MoveToPoolSW.Start();
-                                                                   return RunStatus.Failure; // move on down to the next behavior.
-                                                               })),
-                                                           Bots.Grind.LevelBot.CreateCombatBehavior()
-
-                                            )),
+                    new Decorator(
+                        c => _me.Combat && !_me.IsFlying,
+                        new PrioritySelector(
+                            // equip weapons since we're in combat.
+                            new Decorator(
+                                ret => StyxWoW.Me.Inventory.Equipped.MainHand == null
+                                       ||
+                                       StyxWoW.Me.Inventory.Equipped.MainHand.ItemInfo.WeaponClass ==
+                                       WoWItemWeaponClass.FishingPole,
+                                new Action(ret => Utils.EquipWeapon())),
+                            // reset the 'MoveToPool' timer when in combat. 
+                            new Decorator(
+                                ret => BotPoi.Current != null && BotPoi.Current.Type == PoiType.Harvest,
+                                new Action(
+                                    ret =>
+                                    {
+                                        MoveToPoolAction.MoveToPoolSW.Reset();
+                                        MoveToPoolAction.MoveToPoolSW.Start();
+                                        return RunStatus.Failure; // move on down to the next behavior.
+                                    })),
+                            LevelBot.CreateCombatBehavior()
+                            )),
                     // If bot needs to rest then call the CC rest behavior
-                                             new Decorator(
-                                                 c =>
-                                                 RoutineManager.Current.NeedRest && !StyxWoW.Me.IsCasting &&
-                                                 !_me.IsFlying,
-                                                 new PrioritySelector(
-                    // if Rest Behavior exists use it..
-                                                     new Decorator(c => RoutineManager.Current.RestBehavior != null,
-                                                                   new PrioritySelector(
-                                                                       new Action(c =>
-                                                                                      {
-                                                                                          // reset the autoBlacklist timer since we're stoping to rest.
-                                                                                          if (BotPoi.Current != null &&
-                                                                                              BotPoi.Current.Type ==
-                                                                                              PoiType.Harvest)
-                                                                                          {
-                                                                                              MoveToPoolAction.MoveToPoolSW.Reset();
-                                                                                              MoveToPoolAction.MoveToPoolSW.Start();
-                                                                                          }
-                                                                                          return RunStatus.Failure;
-                                                                                      }),
-                                                                       RoutineManager.Current.RestBehavior
-                                                                       )),
-                    // else call legacy Rest() method
-                                                     new Action(c =>
-                                                                    {
-                                                                        // reset the autoBlacklist timer since we're stoping to rest.
-                                                                        if (BotPoi.Current != null &&
-                                                                            BotPoi.Current.Type == PoiType.Harvest)
-                                                                        {
-                                                                            MoveToPoolAction.MoveToPoolSW.Reset();
-                                                                            MoveToPoolAction.MoveToPoolSW.Start();
-                                                                        }
-                                                                        RoutineManager.Current.Rest();
-                                                                    })
-                                                     )),
+                    new Decorator(
+                        c =>
+                            RoutineManager.Current.NeedRest && !StyxWoW.Me.IsCasting &&
+                            !_me.IsFlying,
+                        new PrioritySelector(
+                            // if Rest Behavior exists use it..
+                            new Decorator(
+                                c => RoutineManager.Current.RestBehavior != null,
+                                new PrioritySelector(
+                                    new Action(
+                                        c =>
+                                        {
+                                            // reset the autoBlacklist timer since we're stoping to rest.
+                                            if (BotPoi.Current != null &&
+                                                BotPoi.Current.Type ==
+                                                PoiType.Harvest)
+                                            {
+                                                MoveToPoolAction.MoveToPoolSW.Reset();
+                                                MoveToPoolAction.MoveToPoolSW.Start();
+                                            }
+                                            return RunStatus.Failure;
+                                        }),
+                                    RoutineManager.Current.RestBehavior
+                                    )),
+                            // else call legacy Rest() method
+                            new Action(
+                                c =>
+                                {
+                                    // reset the autoBlacklist timer since we're stoping to rest.
+                                    if (BotPoi.Current != null &&
+                                        BotPoi.Current.Type == PoiType.Harvest)
+                                    {
+                                        MoveToPoolAction.MoveToPoolSW.Reset();
+                                        MoveToPoolAction.MoveToPoolSW.Start();
+                                    }
+                                    RoutineManager.Current.Rest();
+                                })
+                            )),
                     // mail and repair if bags are full or items have low durability. logout if profile doesn't have mailbox and vendor.
-                                             new Decorator(c => _me.BagsFull || _me.DurabilityPercent <= 0.2 &&
-                                                                (BotPoi.Current == null ||
-                                                                 BotPoi.Current.Type != PoiType.Mail &&
-                                                                 BotPoi.Current.Type != PoiType.Repair &&
-                                                                 BotPoi.Current.Type != PoiType.InnKeeper),
-                                                           new Action(c =>
-                                                                          {
-                                                                              if (ProfileManager.CurrentOuterProfile !=
-                                                                                  null &&
-                                                                                  ProfileManager.CurrentOuterProfile.
-                                                                                      MailboxManager != null)
-                                                                              {
-                                                                                  Mailbox mbox =
-                                                                                      ProfileManager.CurrentOuterProfile
-                                                                                          .MailboxManager.
-                                                                                          GetClosestMailbox();
-                                                                                  if (mbox != null && !String.IsNullOrEmpty(CharacterSettings.Instance.MailRecipient))
-                                                                                  {
-                                                                                      BotPoi.Current = new BotPoi(mbox);
-                                                                                  }
-                                                                                  else
-                                                                                  {
-                                                                                      Vendor ven = ProfileManager.CurrentOuterProfile.VendorManager.GetClosestVendor();
-                                                                                      if (ven != null)
-                                                                                          BotPoi.Current = new BotPoi(ven, PoiType.Repair);
-                                                                                      else
-                                                                                          // we'll use this POI to hearth+Logout...
-                                                                                          BotPoi.Current = new BotPoi(PoiType.InnKeeper);
-                                                                                  }
-                                                                              }
-                                                                              return RunStatus.Failure;
-                                                                          })),
-                                             new Decorator(
-                                                 c => BotPoi.Current != null && BotPoi.Current.Type == PoiType.Mail,
-                                                 new MailAction()),
-                                             new Decorator(
-                                                 c => BotPoi.Current != null && BotPoi.Current.Type == PoiType.Repair,
-                                                 new VendorAction()),
-                                             new Decorator(
-                                                 c => BotPoi.Current != null && BotPoi.Current.Type == PoiType.InnKeeper,
-                                                 new LogoutAction()),
+                    new Decorator(
+                        c => _me.BagsFull || _me.DurabilityPercent <= 0.2 &&
+                             (BotPoi.Current == null ||
+                              BotPoi.Current.Type != PoiType.Mail &&
+                              BotPoi.Current.Type != PoiType.Repair &&
+                              BotPoi.Current.Type != PoiType.InnKeeper),
+                        new Action(
+                            c =>
+                            {
+                                if (ProfileManager.CurrentOuterProfile !=
+                                    null &&
+                                    ProfileManager.CurrentOuterProfile.
+                                        MailboxManager != null)
+                                {
+                                    Mailbox mbox =
+                                        ProfileManager.CurrentOuterProfile
+                                            .MailboxManager.
+                                            GetClosestMailbox();
+                                    if (mbox != null && !String.IsNullOrEmpty(CharacterSettings.Instance.MailRecipient))
+                                    {
+                                        BotPoi.Current = new BotPoi(mbox);
+                                    }
+                                    else
+                                    {
+                                        Vendor ven = ProfileManager.CurrentOuterProfile.VendorManager.GetClosestVendor();
+                                        BotPoi.Current = ven != null
+                                            ? new BotPoi(ven, PoiType.Repair)
+                                            : new BotPoi(PoiType.InnKeeper);
+                                    }
+                                }
+                                return RunStatus.Failure;
+                            })),
+                    new Decorator(
+                        c => BotPoi.Current != null && BotPoi.Current.Type == PoiType.Mail,
+                        new MailAction()),
+                    new Decorator(
+                        c => BotPoi.Current != null && BotPoi.Current.Type == PoiType.Repair,
+                        new VendorAction()),
+                    new Decorator(
+                        c => BotPoi.Current != null && BotPoi.Current.Type == PoiType.InnKeeper,
+                        new LogoutAction()),
                     // loot Any dead lootable NPCs if setting is enabled.
-                                             new Decorator(c => AutoAnglerSettings.Instance.LootNPCs,
-                                                           new LootNPCsAction()),
-                                             new AutoAnglerDecorator(
-                                                 new PrioritySelector(
-                                                     new HarvestPoolDecorator(
-                                                         new PrioritySelector(
-                                                             new LootAction(),
-                                                             new WaterWalkingAction(),
-                                                             new MoveToPoolAction(),
-                                                             new EquipPoleAction(),
-                                                             new ApplyLureAction(),
-                                                             new Decorator(c => FishAtHotspot,
-                                                                 new FaceWaterAction()),
-                                                             new FishAction()
-                                                             ))
-                                                     )),
+                    new Decorator(
+                        c => AutoAnglerSettings.Instance.LootNPCs,
+                        new LootNPCsAction()),
+                    new AutoAnglerDecorator(
+                        new PrioritySelector(
+                            new HarvestPoolDecorator(
+                                new PrioritySelector(
+                                    new LootAction(),
+                                    new WaterWalkingAction(),
+                                    new MoveToPoolAction(),
+                                    new EquipPoleAction(),
+                                    new ApplyLureAction(),
+                                    new Decorator(
+                                        c => FishAtHotspot,
+                                        new FaceWaterAction()),
+                                    new FishAction()
+                                    ))
+                            )),
                     // follow the path...
-                                             new FollowPathAction()
-                                             ));
+                    new FollowPathAction()
+                    ));
             }
         }
 
@@ -251,11 +263,7 @@ namespace HighVoltz
             get { return new MainForm(); }
         }
 
-        readonly InventoryType[] _2HWeaponTypes = new[]
-                                       {
-                                           InventoryType.TwoHandWeapon,
-                                           InventoryType.Ranged,
-                                       };
+        public override void Pulse() {}
 
         public override void Initialize()
         {
@@ -264,7 +272,7 @@ namespace HighVoltz
                 WoWItem mainhand = (MySettings.MainHand != 0 ? Utils.GetIteminBag(MySettings.MainHand) : null) ??
                                    FindMainHand();
                 WoWItem offhand = MySettings.OffHand != 0 ? Utils.GetIteminBag(MySettings.OffHand) : null;
-                if ((mainhand == null  || !_2HWeaponTypes.Contains(mainhand.ItemInfo.InventoryType)) && offhand == null)
+                if ((mainhand == null || !_2HWeaponTypes.Contains(mainhand.ItemInfo.InventoryType)) && offhand == null)
                 {
                     offhand = FindOffhand();
                 }
@@ -287,15 +295,13 @@ namespace HighVoltz
                     ProfileManager.LoadNew(MySettings.LastLoadedProfile);
                 }
                 // check for Autoangler updates
-                new Thread(Updater.CheckForUpdate) { IsBackground = true }.Start();
+                new Thread(Updater.CheckForUpdate) {IsBackground = true}.Start();
             }
             catch (Exception ex)
             {
                 Logging.WriteException(ex);
             }
         }
-
-        #endregion
 
         public override void Start()
         {
@@ -306,16 +312,13 @@ namespace HighVoltz
             Lua.Events.AttachEvent("LOOT_CLOSED", LootFrameClosedHandler);
         }
 
-        private void LootFrameClosedHandler(object sender, LuaEventArgs args) { LootFrameIsOpen = false; }
-
-        private void LootFrameOpenedHandler(object sender, LuaEventArgs args) { LootFrameIsOpen = true; }
-
 
         public override void Stop()
         {
             Log("Equipping weapons");
             Utils.EquipWeapon();
-            Log("In {0} days, {1} hours and {2} minutes we have caught",
+            Log(
+                "In {0} days, {1} hours and {2} minutes we have caught",
                 (DateTime.Now - _botStartTime).Days,
                 (DateTime.Now - _botStartTime).Hours,
                 (DateTime.Now - _botStartTime).Minutes);
@@ -326,6 +329,22 @@ namespace HighVoltz
             Lua.Events.DetachEvent("LOOT_OPENED", LootFrameOpenedHandler);
             Lua.Events.DetachEvent("LOOT_CLOSED", LootFrameClosedHandler);
         }
+
+        #endregion
+
+        #region Handlers
+
+        private void LootFrameClosedHandler(object sender, LuaEventArgs args)
+        {
+            LootFrameIsOpen = false;
+        }
+
+        private void LootFrameOpenedHandler(object sender, LuaEventArgs args)
+        {
+            LootFrameIsOpen = true;
+        }
+
+        #endregion
 
         #region Profile
 
@@ -359,8 +378,9 @@ namespace HighVoltz
                         PoolsToFish.Add(entry);
                         XAttribute nameAttrib = e.Element.Attribute("Name");
                         if (nameAttrib != null)
-                            Instance.Log("Adding Pool Entry: {0} to the list of pools to fish from",
-                                         nameAttrib.Value);
+                            Instance.Log(
+                                "Adding Pool Entry: {0} to the list of pools to fish from",
+                                nameAttrib.Value);
                         else
                             Instance.Log("Adding Pool Entry: {0} to the list of pools to fish from", entry);
                     }
@@ -378,9 +398,10 @@ namespace HighVoltz
                 if (typeAttrib != null)
                 {
                     Instance.MySettings.PathingType = (PathingType)
-                                                      Enum.Parse(typeof(PathingType), typeAttrib.Value, true);
-                    Instance.Log("Setting Pathing Type to {0} Mode",
-                                 Instance.MySettings.PathingType);
+                        Enum.Parse(typeof (PathingType), typeAttrib.Value, true);
+                    Instance.Log(
+                        "Setting Pathing Type to {0} Mode",
+                        Instance.MySettings.PathingType);
                 }
                 else
                 {
@@ -450,14 +471,48 @@ namespace HighVoltz
             WoWPoint point = GetNextWayPoint();
             point = new WoWPoint(point.X - cp.X, point.Y - cp.Y, 0);
             point.Normalize();
-            float angle = WoWMathHelper.NormalizeRadian((float)Math.Atan2(point.Y, point.X - 1));
+            float angle = WoWMathHelper.NormalizeRadian((float) Math.Atan2(point.Y, point.X - 1));
             if (WoWMathHelper.IsFacing(CurrentPoint, angle, pool.Location, 3.141593f) &&
                 CurrentPoint != WayPoints[WayPoints.Count - 1])
             {
                 CycleToNextPoint();
             }
         }
+
         #endregion
+
+        private Composite CreateBehavior_AnitAfk()
+        {
+            var antiAfkTimer = new WaitTimer(TimeSpan.FromMinutes(2));
+            return new Action(
+                ctx =>
+                {
+                    // keep the bot from going afk.
+                    if (antiAfkTimer.IsFinished)
+                    {
+                        KeyboardManager.AntiAfk();
+                        antiAfkTimer.Reset();
+                    }
+                    return RunStatus.Failure;
+                });
+        }
+
+        private Composite CreateBehavior_CheckPulseTime()
+        {
+            return new Action(
+                ctx =>
+                {
+                    var pulseTime = DateTime.Now - _pulseTimestamp;
+                    if (pulseTime >= TimeSpan.FromSeconds(3))
+                    {
+                        Err(
+                            "Warning: It took {0} seconds to pulse.\nThis can cause missed bites. To fix try disabling all plugins",
+                            pulseTime.TotalSeconds);
+                    }
+                    _pulseTimestamp = DateTime.Now;
+                    return RunStatus.Failure;
+                });
+        }
 
         private WoWItem FindMainHand()
         {
@@ -465,9 +520,10 @@ namespace HighVoltz
             if (mainHand == null || mainHand.ItemInfo.WeaponClass == WoWItemWeaponClass.FishingPole)
             {
                 mainHand = _me.CarriedItems.OrderByDescending(u => u.ItemInfo.Level).
-                    FirstOrDefault(i => i.IsSoulbound && (i.ItemInfo.InventoryType == InventoryType.WeaponMainHand ||
-                                                          i.ItemInfo.InventoryType == InventoryType.TwoHandWeapon) &&
-                                        _me.CanEquipItem(i));
+                    FirstOrDefault(
+                        i => i.IsSoulbound && (i.ItemInfo.InventoryType == InventoryType.WeaponMainHand ||
+                                               i.ItemInfo.InventoryType == InventoryType.TwoHandWeapon) &&
+                             _me.CanEquipItem(i));
                 if (mainHand != null)
                 {
                     MySettings.MainHand = mainHand.Entry;
@@ -488,11 +544,12 @@ namespace HighVoltz
             if (offHand == null)
             {
                 offHand = _me.CarriedItems.OrderByDescending(u => u.ItemInfo.Level).
-                    FirstOrDefault(i => i.IsSoulbound && (i.ItemInfo.InventoryType == InventoryType.WeaponOffHand ||
-                                                          i.ItemInfo.InventoryType == InventoryType.Weapon ||
-                                                          i.ItemInfo.InventoryType == InventoryType.Shield) &&
-                                        MySettings.MainHand != i.Entry &&
-                                        _me.CanEquipItem(i));
+                    FirstOrDefault(
+                        i => i.IsSoulbound && (i.ItemInfo.InventoryType == InventoryType.WeaponOffHand ||
+                                               i.ItemInfo.InventoryType == InventoryType.Weapon ||
+                                               i.ItemInfo.InventoryType == InventoryType.Shield) &&
+                             MySettings.MainHand != i.Entry &&
+                             _me.CanEquipItem(i));
                 if (offHand != null)
                 {
                     MySettings.OffHand = offHand.Entry;
@@ -521,8 +578,8 @@ namespace HighVoltz
             Logging.WriteDiagnostic(Colors.DodgerBlue, String.Format("AutoAngler[{0}]: {1}", Version, format), args);
         }
 
-        static string GetBotPath()
-        {   // taken from Singular.
+        private static string GetBotPath()
+        { // taken from Singular.
             // bit of a hack, but location of source code for assembly is only.
             var asmName = Assembly.GetExecutingAssembly().GetName().Name;
             var len = asmName.LastIndexOf("_", StringComparison.Ordinal);
