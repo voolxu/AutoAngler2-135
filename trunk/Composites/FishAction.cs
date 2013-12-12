@@ -101,10 +101,10 @@ namespace HighVoltz.Composites
                         CastLine();
                     }
                     // else lets see if there's a bite!
-                    else if (bobber.AnimationState == 1)
+                    else if (((WoWFishingBobber )bobber.SubObj).IsBobbing)
                     {
                         _castCounter = 0;
-                        (bobber.SubObj).Use();
+                        bobber.SubObj.Use();
                         LootAction.WaitingForLootSW.Reset();
                         LootAction.WaitingForLootSW.Start();
                     }
