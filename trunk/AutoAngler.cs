@@ -116,14 +116,7 @@ namespace HighVoltz
                     CreateBehavior_CheckPulseTime(),
                     CreateBehavior_AnitAfk(),
                     // Is bot dead? if so, release and run back to corpse
-                    new Decorator(
-                        c => !_me.IsAlive,
-                        new PrioritySelector(
-                            new DecoratorNeedToRelease(new ActionReleaseFromCorpse()),
-                            new DecoratorNeedToMoveToCorpse(new ActionMoveToCorpse()),
-                            new DecoratorNeedToTakeCorpse(new ActionRetrieveCorpse()),
-                            new ActionSuceedIfDeadOrGhost()
-                            )),
+				   LevelBot.CreateDeathBehavior(),
                     // If bot is in combat call the CC routine
                     new Decorator(
                         c => _me.Combat && !_me.IsFlying,
