@@ -345,7 +345,7 @@ namespace HighVoltz
         {
             try
             {
-                LoadWayPoints(ProfileManager.CurrentProfile);
+				LoadWayPoints(args.NewProfile);
             }
             catch (Exception ex)
             {
