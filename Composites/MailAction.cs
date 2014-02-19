@@ -6,11 +6,11 @@ using Styx.CommonBot.POI;
 using Styx.CommonBot.Profiles;
 using Styx.Helpers;
 using Styx.Pathing;
+using Styx.TreeSharp;
 using Styx.WoWInternals;
 using Styx.WoWInternals.WoWObjects;
-using Styx.TreeSharp;
 
-namespace HighVoltz.Composites
+namespace HighVoltz.AutoAngler.Composites
 {
     public class MailAction : Action
     {
@@ -26,7 +26,7 @@ namespace HighVoltz.Composites
 
             if (_me.Location.Distance(loc) > 4)
             {
-                if (AutoAngler.Instance.MySettings.Fly)
+				if (AutoAnglerBot.Instance.MySettings.Fly)
                     Flightor.MoveTo(WoWMathHelper.CalculatePointFrom(_me.Location, loc, 3));
                 else
                 {
@@ -41,7 +41,7 @@ namespace HighVoltz.Composites
                 {
                     if (mailbox == null)
                     {
-                        AutoAngler.Instance.Log("No Mailbox found at location {0}. Vendoring instead", loc);
+						AutoAnglerBot.Instance.Log("No Mailbox found at location {0}. Vendoring instead", loc);
                         Vendor ven = ProfileManager.CurrentOuterProfile.VendorManager.GetClosestVendor();
                         if (ven != null)
                             BotPoi.Current = new BotPoi(ven, PoiType.Repair);

@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using Styx.Helpers;
 
-namespace HighVoltz
+namespace HighVoltz.AutoAngler
 {
     public class AutoAnglerSettings : Settings
     {

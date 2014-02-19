@@ -1,11 +1,11 @@
 ﻿using System.Linq;
 using Styx.CommonBot.Frames;
 using Styx.Pathing;
+using Styx.TreeSharp;
 using Styx.WoWInternals;
 using Styx.WoWInternals.WoWObjects;
-using Styx.TreeSharp;
 
-namespace HighVoltz.Composites
+namespace HighVoltz.AutoAngler.Composites
 {
     public class LootNPCsAction : Action
     {
@@ -33,10 +33,10 @@ namespace HighVoltz.Composites
                     for (int i = 0; i < LootFrame.Instance.LootItems; i++)
                     {
                         LootSlotInfo lootInfo = LootFrame.Instance.LootInfo(i);
-                        if (AutoAngler.FishCaught.ContainsKey(lootInfo.LootName))
-                            AutoAngler.FishCaught[lootInfo.LootName] += (uint) lootInfo.LootQuantity;
+						if (AutoAnglerBot.FishCaught.ContainsKey(lootInfo.LootName))
+							AutoAnglerBot.FishCaught[lootInfo.LootName] += (uint)lootInfo.LootQuantity;
                         else
-                            AutoAngler.FishCaught.Add(lootInfo.LootName, (uint) lootInfo.LootQuantity);
+							AutoAnglerBot.FishCaught.Add(lootInfo.LootName, (uint)lootInfo.LootQuantity);
                     }
                     LootFrame.Instance.LootAll();
                 }

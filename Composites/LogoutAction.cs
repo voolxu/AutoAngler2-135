@@ -2,10 +2,10 @@
 using System.Threading;
 using Styx;
 using Styx.CommonBot;
-using Styx.WoWInternals;
 using Styx.TreeSharp;
+using Styx.WoWInternals;
 
-namespace HighVoltz.Composites
+namespace HighVoltz.AutoAngler.Composites
 {
     public class LogoutAction : Action
     {
@@ -24,7 +24,7 @@ namespace HighVoltz.Composites
                     return RunStatus.Success;
                 Thread.Sleep(100); // I feel so teribad... not!
             }
-            AutoAngler.Instance.Log("Logging out");
+			AutoAnglerBot.Instance.Log("Logging out");
             Lua.DoString("Logout()");
             TreeRoot.Stop();
             return RunStatus.Success;

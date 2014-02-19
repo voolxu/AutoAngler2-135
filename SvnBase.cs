@@ -2,7 +2,7 @@
 //!CompilerOption:AddRef:WindowsBase.dll
 // Professionbuddy plugin by HighVoltz
 
-namespace HighVoltz
+namespace HighVoltz.AutoAngler
 {
     public class SvnBase
     {
