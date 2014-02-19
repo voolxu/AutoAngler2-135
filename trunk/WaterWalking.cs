@@ -2,13 +2,12 @@
 using System.Diagnostics;
 using System.Linq;
 using Styx;
-using Styx.CommonBot.Routines;
 using Styx.CommonBot;
 using Styx.Helpers;
 using Styx.WoWInternals;
 using Styx.WoWInternals.WoWObjects;
 
-namespace HighVoltz
+namespace HighVoltz.AutoAngler
 {
     public class WaterWalking
     {
@@ -20,7 +19,7 @@ namespace HighVoltz
         {
             get
             {
-                return AutoAngler.Instance.MySettings.UseWaterWalking &&
+				return AutoAnglerBot.Instance.MySettings.UseWaterWalking &&
                        (SpellManager.HasSpell("Levitate") || // priest levitate
                         SpellManager.HasSpell("Water Walking") || // shaman water walking
                         SpellManager.HasSpell("Path of Frost") || // Dk Path of frost

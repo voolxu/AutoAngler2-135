@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using Styx;
+using Styx.Common.Helpers;
 using Styx.CommonBot;
 using Styx.CommonBot.POI;
 using Styx.Helpers;
@@ -12,28 +13,28 @@ using Styx.WoWInternals.WoWObjects;
 using Styx.TreeSharp;
 using Action = Styx.TreeSharp.Action;
 
-namespace HighVoltz.Composites
+namespace HighVoltz.AutoAngler.Composites
 {
     public class FishAction : Action
     {
-        public FishAction()
-        {
-        }
-        public static readonly Stopwatch LineRecastSW = new Stopwatch();
-        private readonly LocalPlayer _me = StyxWoW.Me;
+	    public static readonly Stopwatch LineRecastSW = new Stopwatch();
+        private LocalPlayer Me {get { return StyxWoW.Me; }}
+
         private readonly Stopwatch _timeAtPoolSW = new Stopwatch();
         private int _castCounter;
         private ulong _lastPoolGuid;
+	    private WaitTimer _bobberInteractionTimer;
+
 
         protected override RunStatus Run(object context)
         {
             WoWGameObject pool = null;
-            if (_me.Mounted)
+			if (Me.Mounted)
                 Mount.Dismount("Fishing");
-            if (_me.IsMoving || _me.IsFalling)
+			if (Me.IsMoving || Me.IsFalling)
             {
                 WoWMovement.MoveStop();
-                if (!_me.HasAura("Levitate"))
+				if (!Me.HasAura("Levitate"))
                     return RunStatus.Success;
             }
             if (BotPoi.Current != null && BotPoi.Current.Type == PoiType.Harvest)
@@ -51,15 +52,15 @@ namespace HighVoltz.Composites
                     _timeAtPoolSW.Start();
                 }
                 // safety check. if spending more than 5 mins at pool than black list it.
-                if (_timeAtPoolSW.ElapsedMilliseconds >= AutoAngler.Instance.MySettings.MaxTimeAtPool * 60000)
+                if (_timeAtPoolSW.ElapsedMilliseconds >= AutoAnglerBot.Instance.MySettings.MaxTimeAtPool * 60000)
                 {
                     Utils.BlacklistPool(pool, TimeSpan.FromMinutes(10), "Spend too much time at pool");
                     return RunStatus.Failure;
                 }
                 // Blacklist pool if we have too many failed casts
-                if (_castCounter >= AutoAngler.Instance.MySettings.MaxFailedCasts)
+                if (_castCounter >= AutoAnglerBot.Instance.MySettings.MaxFailedCasts)
                 {
-                    AutoAngler.Instance.Log("Moving to a new fishing location since we have {0} failed casts",
+                    AutoAnglerBot.Instance.Log("Moving to a new fishing location since we have {0} failed casts",
                                             _castCounter);
                     _castCounter = 0;
                     MoveToPoolAction.PoolPoints.RemoveAt(0);
@@ -67,27 +68,25 @@ namespace HighVoltz.Composites
                 }
 
                 // face pool if not facing it already.
-                if (!IsFacing2D(_me.Location, _me.Rotation, pool.Location, WoWMathHelper.DegreesToRadians(5)))
+				if (!IsFacing2D(Me.Location, Me.Rotation, pool.Location, WoWMathHelper.DegreesToRadians(5)))
                 {
                     LineRecastSW.Reset();
                     LineRecastSW.Start();
-                    _me.SetFacing(pool.Location);
+					Me.SetFacing(pool.Location);
                     // SetFacing doesn't really update my angle in game.. still tries to fish using prev angle. so I need to move to update in-game angle
                     WoWMovement.Move(WoWMovement.MovementDirection.ForwardBackMovement);
                     WoWMovement.MoveStop(WoWMovement.MovementDirection.ForwardBackMovement);
                     return RunStatus.Success;
                 }
             }
-            if (_me.IsCasting)
+			if (Me.IsCasting)
             {
                 WoWGameObject bobber = null;
                 try
                 {
-                    var b = ObjectManager.GetObjectsOfType<WoWGameObject>().FirstOrDefault(o => o != null && o.IsValid && o.CreatedByGuid == _me.Guid);
-
                     bobber = ObjectManager.GetObjectsOfType<WoWGameObject>()
                         .FirstOrDefault(o => o.IsValid && o.SubType == WoWGameObjectType.FishingNode &&
-                                             o.CreatedBy.Guid == _me.Guid);
+											 o.CreatedBy.Guid == Me.Guid);
                 }
                 catch (Exception)
                 {
@@ -95,26 +94,40 @@ namespace HighVoltz.Composites
                 if (bobber != null)
                 {
                     // recast line if it's not close enough to pool
-                    if (AutoAngler.Instance.MySettings.Poolfishing && pool != null &&
+                    if (AutoAnglerBot.Instance.MySettings.Poolfishing && pool != null &&
                         bobber.Location.Distance(pool.Location) > 3.6f)
                     {
                         CastLine();
                     }
                     // else lets see if there's a bite!
-                    else if (((WoWFishingBobber )bobber.SubObj).IsBobbing)
+					else if (((WoWFishingBobber)bobber.SubObj).IsBobbing && _bobberInteractionTimer == null)
                     {
-                        _castCounter = 0;
-                        bobber.SubObj.Use();
-                        LootAction.WaitingForLootSW.Reset();
-                        LootAction.WaitingForLootSW.Start();
+						_bobberInteractionTimer = new WaitTimer(DelayAfterBobberTrigger);
+						_bobberInteractionTimer.Reset();
                     }
+					else if (_bobberInteractionTimer != null && _bobberInteractionTimer.IsFinished)
+					{
+						_bobberInteractionTimer = null;
+						_castCounter = 0;
+						bobber.SubObj.Use();
+						LootAction.WaitingForLootSW.Restart();
+					}
                 }
                 return RunStatus.Success;
-            }
+            }						
             CastLine();
             return RunStatus.Success;
         }
 
+		//public static TimeSpan DelayAfterBobberTrigger
+		//{
+		//	get
+		//	{
+		//		return (_random.Next(1, 100) < 85)
+		//			? TimeSpan.FromMilliseconds(_random.Next(300, 700))     // 'normal' delay
+		//			: TimeSpan.FromMilliseconds(_random.Next(600, 2400));   // 'outlier' delay
+		//	}
+		//}
 
         private void CastLine()
         {
@@ -139,7 +152,15 @@ namespace HighVoltz.Composites
             bool result = (num2 <= arcRadians / 2f);
             return result;
         }
-        static FieldInfo fi = typeof(AutoAngler).GetField("\u0052", BindingFlags.Static | BindingFlags.Public);
 
+		public static TimeSpan DelayAfterBobberTrigger
+		{
+			get
+			{
+				return (Utils.Rnd.Next(1, 100) < 85)
+					? TimeSpan.FromMilliseconds(Utils.Rnd.Next(300, 700))     // 'normal' delay
+					: TimeSpan.FromMilliseconds(Utils.Rnd.Next(600, 2400));   // 'outlier' delay
+			}
+		}
     }
 }

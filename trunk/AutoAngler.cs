@@ -13,7 +13,7 @@ using System.Windows.Media;
 using System.Xml.Linq;
 using Bots.Grind;
 using CommonBehaviors.Actions;
-using HighVoltz.Composites;
+using HighVoltz.AutoAngler.Composites;
 using Levelbot.Actions.Death;
 using Levelbot.Decorators.Death;
 using Styx;
@@ -30,7 +30,7 @@ using Styx.TreeSharp;
 using Action = Styx.TreeSharp.Action;
 using Color = System.Windows.Media.Color;
 
-namespace HighVoltz
+namespace HighVoltz.AutoAngler
 {
     public enum PathingType
     {
@@ -38,7 +38,7 @@ namespace HighVoltz
         Bounce
     }
 
-    public class AutoAngler : BotBase
+    public class AutoAnglerBot : BotBase
     {
         public static readonly List<uint> PoolsToFish = new List<uint>();
         private static DateTime _botStartTime;
@@ -50,7 +50,7 @@ namespace HighVoltz
         private readonly LocalPlayer _me = StyxWoW.Me;
         private AutoAnglerSettings _settings;
 
-        public AutoAngler()
+        public AutoAnglerBot()
         {
             Instance = this;
             BotEvents.Profile.OnNewOuterProfileLoaded += Profile_OnNewOuterProfileLoaded;
@@ -60,7 +60,7 @@ namespace HighVoltz
         public static bool LootFrameIsOpen { get; private set; }
 
         public static Dictionary<string, uint> FishCaught { get; private set; }
-        public static AutoAngler Instance { get; private set; }
+        public static AutoAnglerBot Instance { get; private set; }
 
         public AutoAnglerSettings MySettings
         {

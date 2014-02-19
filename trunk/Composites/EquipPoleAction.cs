@@ -1,11 +1,9 @@
 ﻿using System.Linq;
 using Styx;
-using Styx.CommonBot;
-using Styx.WoWInternals;
-using Styx.WoWInternals.WoWObjects;
 using Styx.TreeSharp;
+using Styx.WoWInternals.WoWObjects;
 
-namespace HighVoltz.Composites
+namespace HighVoltz.AutoAngler.Composites
 {
     public class EquipPoleAction : Action
     {
@@ -28,7 +26,7 @@ namespace HighVoltz.Composites
             WoWItem pole = _me.BagItems.FirstOrDefault(i => i.ItemInfo.WeaponClass == WoWItemWeaponClass.FishingPole);
             if (pole != null)
             {
-                AutoAngler.Instance.Log("Equipping " + pole.Name);
+				AutoAnglerBot.Instance.Log("Equipping " + pole.Name);
                 // fix for cases where pole is in a fish bag
                 //using (new FrameLock())
                 //{

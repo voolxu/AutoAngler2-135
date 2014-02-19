@@ -2,18 +2,17 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using Styx;
-using Styx.CommonBot.Routines;
 using Styx.CommonBot;
 using Styx.CommonBot.POI;
 using Styx.Helpers;
 using Styx.Pathing;
-using Styx.WoWInternals;
-using Styx.WoWInternals.WoWObjects;
-using Styx.WoWInternals.World;
 using Styx.TreeSharp;
+using Styx.WoWInternals;
+using Styx.WoWInternals.World;
+using Styx.WoWInternals.WoWObjects;
 using Action = Styx.TreeSharp.Action;
 
-namespace HighVoltz.Composites
+namespace HighVoltz.AutoAngler.Composites
 {
     public class MoveToPoolAction : Action
     {
@@ -28,7 +27,7 @@ namespace HighVoltz.Composites
 
         protected override RunStatus Run(object context)
         {
-            if (AutoAnglerSettings.Instance.Poolfishing && !AutoAngler.FishAtHotspot && BotPoi.Current != null && BotPoi.Current.Type == PoiType.Harvest)
+			if (AutoAnglerSettings.Instance.Poolfishing && !AutoAnglerBot.FishAtHotspot && BotPoi.Current != null && BotPoi.Current.Type == PoiType.Harvest)
             {
                 var pool = (WoWGameObject) BotPoi.Current.AsObject;
                 if (pool != null && pool.IsValid)
@@ -43,7 +42,7 @@ namespace HighVoltz.Composites
 
         private bool FindPoolPoint(WoWGameObject pool)
         {
-            int traceStep = AutoAngler.Instance.MySettings.TraceStep;
+			int traceStep = AutoAnglerBot.Instance.MySettings.TraceStep;
             const float pIx2 = 3.14159f*2f;
             var traceLine = new WorldLine[traceStep];
             PoolPoints.Clear();
@@ -51,9 +50,9 @@ namespace HighVoltz.Composites
             // scans starting at 15 yards from player for water at every 18 degress 
 
             float range = 15;
-            int min = AutoAngler.Instance.MySettings.MinPoolRange;
-            int max = AutoAngler.Instance.MySettings.MaxPoolRange;
-            float step = AutoAngler.Instance.MySettings.PoolRangeStep;
+			int min = AutoAnglerBot.Instance.MySettings.MinPoolRange;
+			int max = AutoAnglerBot.Instance.MySettings.MaxPoolRange;
+			float step = AutoAnglerBot.Instance.MySettings.PoolRangeStep;
             float delta = step;
             float avg = (min + max)/2;
             while (true)
@@ -98,7 +97,7 @@ namespace HighVoltz.Composites
                     GameWorld.MassTraceLine(slopetraces.ToArray(),
                                             GameWorld.CGWorldFrameHitFlags.HitTestGroundAndStructures,
                                             out slopelinesRetVals, out slopeHits);
-                    if (AutoAngler.Instance.MySettings.AvoidLava)
+					if (AutoAnglerBot.Instance.MySettings.AvoidLava)
                     {
                         GameWorld.MassTraceLine(slopetraces.ToArray(), GameWorld.CGWorldFrameHitFlags.HitTestLiquid2,
                                                 out lavaRetVals);
@@ -268,7 +267,7 @@ namespace HighVoltz.Composites
                     else if (_me.MovementInfo.IsAscending || _me.MovementInfo.JumpingOrShortFalling)
                         WoWMovement.MoveStop(WoWMovement.MovementDirection.JumpAscend);
                 }
-                if (AutoAngler.Instance.MySettings.Fly)
+				if (AutoAnglerBot.Instance.MySettings.Fly)
                 {
                     // don't bother mounting up if we can use navigator to walk over if it's less than 25 units away
                     if (_me.Location.Distance(PoolPoints[0]) < 25 && !_me.Mounted)
@@ -294,8 +293,8 @@ namespace HighVoltz.Composites
                         moveResult == MoveResult.PathGenerationFailed || moveResult == MoveResult.Failed)
                     {
                         if (!RemovePointAtTop(pool))
-                            return RunStatus.Success; 
-                        AutoAngler.Instance.Debug("Unable to path to pool point, switching to a new point");
+                            return RunStatus.Success;
+						AutoAnglerBot.Instance.Debug("Unable to path to pool point, switching to a new point");
                         PoolPoints.Sort((a, b) => a.Distance(_me.Location).CompareTo(b.Distance(_me.Location)));
                     }
                 }
@@ -331,7 +330,7 @@ namespace HighVoltz.Composites
             // can't fish while swimming..
             if (_me.IsSwimming && !WaterWalking.CanCast)
             {
-                AutoAngler.Instance.Debug("Moving to new PoolPoint since I'm swimming at current PoolPoint");
+				AutoAnglerBot.Instance.Debug("Moving to new PoolPoint since I'm swimming at current PoolPoint");
                 RemovePointAtTop(pool);
                 return RunStatus.Success;
             }

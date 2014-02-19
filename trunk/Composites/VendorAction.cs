@@ -1,20 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using Styx;
 using Styx.CommonBot;
 using Styx.CommonBot.Frames;
 using Styx.CommonBot.POI;
 using Styx.CommonBot.Profiles;
-using Styx.Pathing;
-using Action = Styx.TreeSharp.Action;
 using Styx.Helpers;
-using Styx;
-using Styx.WoWInternals;
+using Styx.Pathing;
 using Styx.TreeSharp;
+using Styx.WoWInternals;
 using Styx.WoWInternals.WoWObjects;
+using Action = Styx.TreeSharp.Action;
 
-namespace HighVoltz.Composites
+namespace HighVoltz.AutoAngler.Composites
 {
     public class VendorAction:Action
     {
@@ -28,7 +26,7 @@ namespace HighVoltz.Composites
              WoWPoint loc = vendor != null ? vendor.Location : ven.Location;
              if (_me.Location.Distance(loc) > 4)
              {
-                 if (AutoAngler.Instance.MySettings.Fly)
+				 if (AutoAnglerBot.Instance.MySettings.Fly)
                      Flightor.MoveTo(WoWMathHelper.CalculatePointFrom(_me.Location, loc, 4));
                  else
                  {
@@ -43,7 +41,7 @@ namespace HighVoltz.Composites
                  {
                      if (vendor == null)
                      {
-                         AutoAngler.Instance.Log("No vendor found at location {0}. hearth + logging out instead", loc);
+						 AutoAnglerBot.Instance.Log("No vendor found at location {0}. hearth + logging out instead", loc);
                          BotPoi.Current = new BotPoi(PoiType.InnKeeper);
                          return RunStatus.Failure;
                      }

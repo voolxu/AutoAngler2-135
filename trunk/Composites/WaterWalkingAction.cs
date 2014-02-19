@@ -1,10 +1,8 @@
 ﻿using Styx;
 using Styx.TreeSharp;
-using Styx.WoWInternals;
 using Styx.WoWInternals.WoWObjects;
-using Styx.TreeSharp;
 
-namespace HighVoltz.Composites
+namespace HighVoltz.AutoAngler.Composites
 {
     public class WaterWalkingAction : Action
     {

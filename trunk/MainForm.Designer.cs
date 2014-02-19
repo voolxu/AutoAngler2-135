@@ -1,4 +1,4 @@
-﻿namespace HighVoltz
+﻿namespace HighVoltz.AutoAngler
 {
     partial class MainForm
     {

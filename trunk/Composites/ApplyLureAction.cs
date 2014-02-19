@@ -2,11 +2,10 @@
 using System.Diagnostics;
 using System.Linq;
 using Styx;
-using Styx.WoWInternals;
-using Styx.WoWInternals.WoWObjects;
 using Styx.TreeSharp;
+using Styx.WoWInternals.WoWObjects;
 
-namespace HighVoltz.Composites
+namespace HighVoltz.AutoAngler.Composites
 {
     public class ApplyLureAction : Action
     {
@@ -57,7 +56,7 @@ namespace HighVoltz.Composites
             WoWItem pandalure = StyxWoW.Me.BagItems.FirstOrDefault(r => r.Entry == 85973);
             if (pandalure != null && !_me.HasAura(125167))
             {
-                AutoAngler.Instance.Log("Appling awesome panda lure");
+				AutoAnglerBot.Instance.Log("Appling awesome panda lure");
                 Utils.UseItemByID(85973);
                 return true;
             }
@@ -66,7 +65,7 @@ namespace HighVoltz.Composites
             WoWItem head = _me.Inventory.GetItemBySlot((uint)WoWEquipSlot.Head);
             if (head != null && (head.Entry == 88710 || head.Entry == 33820))
             {
-                AutoAngler.Instance.Log("Appling Fishing Hat lure to fishing pole");
+				AutoAnglerBot.Instance.Log("Appling Fishing Hat lure to fishing pole");
                 Utils.UseItemByID((int)head.Entry);
                 return true;
             }
@@ -76,7 +75,7 @@ namespace HighVoltz.Composites
                 WoWItem lureInBag = Utils.GetIteminBag(kv.Key);
                 if (lureInBag != null && lureInBag.Use())
                 {
-                    AutoAngler.Instance.Log("Appling {0} to fishing pole", kv.Value);
+					AutoAnglerBot.Instance.Log("Appling {0} to fishing pole", kv.Value);
                     return true;
                 }
             }

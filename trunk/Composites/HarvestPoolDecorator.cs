@@ -4,12 +4,11 @@ using Styx;
 using Styx.CommonBot;
 using Styx.CommonBot.POI;
 using Styx.CommonBot.Profiles;
+using Styx.TreeSharp;
 using Styx.WoWInternals;
 using Styx.WoWInternals.WoWObjects;
-using Styx.TreeSharp;
-using System.Reflection;
 
-namespace HighVoltz.Composites
+namespace HighVoltz.AutoAngler.Composites
 {
     internal class HarvestPoolDecorator : Decorator
     {
@@ -19,14 +18,14 @@ namespace HighVoltz.Composites
 
         protected override bool CanRun(object context)
         {
-            if (!AutoAngler.Instance.MySettings.Poolfishing || (AutoAngler.FishAtHotspot && StyxWoW.Me.Location.Distance(AutoAngler.CurrentPoint) <= 3))
+			if (!AutoAnglerBot.Instance.MySettings.Poolfishing || (AutoAnglerBot.FishAtHotspot && StyxWoW.Me.Location.Distance(AutoAnglerBot.CurrentPoint) <= 3))
                 return true;
             WoWGameObject pool = ObjectManager.GetObjectsOfType<WoWGameObject>()
                 .OrderBy(o => o.Distance)
                 .FirstOrDefault(o => o.SubType == WoWGameObjectType.FishingHole && !Blacklist.Contains(o.Guid) &&
                     // Check if we're fishing from specific pools
-                                     ((AutoAngler.PoolsToFish.Count > 0 && AutoAngler.PoolsToFish.Contains(o.Entry))
-                                      || AutoAngler.PoolsToFish.Count == 0) &&
+									 ((AutoAnglerBot.PoolsToFish.Count > 0 && AutoAnglerBot.PoolsToFish.Contains(o.Entry))
+									  || AutoAnglerBot.PoolsToFish.Count == 0) &&
                     // chaeck if pool is in a blackspot
                                      !IsInBlackspot(o) &&
                     // check if player is near pool
@@ -40,7 +39,7 @@ namespace HighVoltz.Composites
                 if (poiObj == null || !poiObj.IsValid)
                 {
                     BotPoi.Current = new BotPoi(pool, PoiType.Harvest);
-                    AutoAngler.CycleToNextIfBehind(pool);
+					AutoAnglerBot.CycleToNextIfBehind(pool);
                 }
                 return true;
             }
@@ -54,7 +53,7 @@ namespace HighVoltz.Composites
             _lastPoolGuid = pool.Guid;
             bool nearbyPlayers = ObjectManager.GetObjectsOfType<WoWPlayer>(false, false).
                 Any(p => !p.IsFlying && p.Location.Distance2D(pool.Location) < 20);
-            bool fishDaPool = !(!AutoAngler.Instance.MySettings.NinjaNodes && nearbyPlayers);
+			bool fishDaPool = !(!AutoAnglerBot.Instance.MySettings.NinjaNodes && nearbyPlayers);
             if (!fishDaPool)
                 Utils.BlacklistPool(pool, TimeSpan.FromMinutes(1), "Another player fishing that pool");
             return fishDaPool;
@@ -69,7 +68,7 @@ namespace HighVoltz.Composites
                     ProfileManager.CurrentProfile.Blackspots.Any(
                         blackSpot => blackSpot.Location.Distance2D(pool.Location) <= blackSpot.Radius))
                 {
-                    AutoAngler.Instance.Log("Ignoring {0} at {1} since it's in a BlackSpot", pool.Name, pool.Location);
+					AutoAnglerBot.Instance.Log("Ignoring {0} at {1} since it's in a BlackSpot", pool.Name, pool.Location);
                     return true;
                 }
             }

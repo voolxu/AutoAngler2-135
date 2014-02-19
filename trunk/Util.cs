@@ -4,16 +4,15 @@ using System.Linq;
 using Styx;
 using Styx.CommonBot;
 using Styx.CommonBot.POI;
+using Styx.Helpers;
 using Styx.WoWInternals;
 using Styx.WoWInternals.WoWObjects;
 
-namespace HighVoltz
+namespace HighVoltz.AutoAngler
 {
     static class Utils
     {
-        private static readonly LocalPlayer Me = StyxWoW.Me;
-        private static uint _ping = Lua.GetReturnVal<uint>("return GetNetStats()", 3);
-        private static readonly Stopwatch PingSW = new Stopwatch();
+	    public static readonly Random Rnd = new Random();
 
         public static bool IsLureOnPole
         {
@@ -21,18 +20,18 @@ namespace HighVoltz
             {
                 bool useHatLure = false;
 
-                var head = Me.Inventory.GetItemBySlot((uint)WoWEquipSlot.Head);
+                var head = StyxWoW.Me.Inventory.GetItemBySlot((uint)WoWEquipSlot.Head);
                 if (head != null && (head.Entry == 88710 || head.Entry == 33820))
                     useHatLure = true;
 
                 var lure = StyxWoW.Me.BagItems.FirstOrDefault(r => r.Entry == 85973);
-                if (AutoAngler.Instance.MySettings.Poolfishing && lure != null && !Me.HasAura(125167))
+				if (AutoAnglerBot.Instance.MySettings.Poolfishing && lure != null && !StyxWoW.Me.HasAura(125167))
                 {
                     return false;
                 }
 
                 //if poolfishing, dont need lure say we have one
-                if (AutoAngler.Instance.MySettings.Poolfishing && !useHatLure && !AutoAngler.FishAtHotspot)
+				if (AutoAnglerBot.Instance.MySettings.Poolfishing && !useHatLure && !AutoAnglerBot.FishAtHotspot)
                     return true;
 
                 var ret = Lua.GetReturnValues("return GetWeaponEnchantInfo()");
@@ -40,6 +39,7 @@ namespace HighVoltz
             }
         }
 
+	    static TimeCachedValue<uint> _wowPing;
         /// <summary>
         /// Returns WoW's ping, refreshed every 30 seconds.
         /// </summary>
@@ -47,21 +47,14 @@ namespace HighVoltz
         {
             get
             {
-                if (!PingSW.IsRunning)
-                    PingSW.Start();
-                if (PingSW.ElapsedMilliseconds > 30000)
-                {
-                    _ping = Lua.GetReturnVal<uint>("return GetNetStats()", 3);
-                    PingSW.Reset();
-                    PingSW.Start();
-                }
-                return _ping;
+	            return _wowPing ??
+						(_wowPing = new TimeCachedValue<uint>(TimeSpan.FromSeconds(30), () => Lua.GetReturnVal<uint>("return GetNetStats()", 3)));
             }
         }
 
         public static bool IsItemInBag(uint entry)
         {
-            return Me.BagItems.Any(i => i.Entry == entry);
+			return StyxWoW.Me.BagItems.Any(i => i.Entry == entry);
         }
 
         public static WoWItem GetIteminBag(uint entry)
@@ -73,23 +66,23 @@ namespace HighVoltz
         {
             bool is2Hand = false;
             // equip right hand weapon
-            uint mainHandID = AutoAngler.Instance.MySettings.MainHand;
+			uint mainHandID = AutoAnglerBot.Instance.MySettings.MainHand;
             WoWItem mainHand = StyxWoW.Me.Inventory.Equipped.MainHand;
             if (mainHand == null || (mainHand.Entry != mainHandID && Utils.IsItemInBag(mainHandID)))
             {
-                var weapon = StyxWoW.Me.BagItems.FirstOrDefault(i => i.Entry == AutoAngler.Instance.MySettings.MainHand);
+				var weapon = StyxWoW.Me.BagItems.FirstOrDefault(i => i.Entry == AutoAnglerBot.Instance.MySettings.MainHand);
                 is2Hand = weapon.ItemInfo.InventoryType == InventoryType.TwoHandWeapon || weapon.ItemInfo.InventoryType == InventoryType.Ranged;
-                Utils.EquipItemByID(AutoAngler.Instance.MySettings.MainHand);
+				Utils.EquipItemByID(AutoAnglerBot.Instance.MySettings.MainHand);
             }
 
             // equip left hand weapon
-            uint offhandID = AutoAngler.Instance.MySettings.OffHand;
+			uint offhandID = AutoAnglerBot.Instance.MySettings.OffHand;
             WoWItem offhand = StyxWoW.Me.Inventory.Equipped.OffHand;
 
             if ((!is2Hand && offhandID > 0 &&
                  (offhand == null || (offhand.Entry != offhandID && Utils.IsItemInBag(offhandID)))))
             {
-                Utils.EquipItemByID(AutoAngler.Instance.MySettings.OffHand);
+				Utils.EquipItemByID(AutoAnglerBot.Instance.MySettings.OffHand);
             }
         }
 
@@ -111,7 +104,7 @@ namespace HighVoltz
         public static void BlacklistPool(WoWGameObject pool, TimeSpan time, string reason)
         {
             Blacklist.Add(pool.Guid, time);
-            AutoAngler.Instance.Log("Blacklisting {0} for {1} Reason: {2}", pool.Name, time, reason);
+			AutoAnglerBot.Instance.Log("Blacklisting {0} for {1} Reason: {2}", pool.Name, time, reason);
             BotPoi.Current = new BotPoi(PoiType.None);
         }
     }

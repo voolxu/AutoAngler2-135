@@ -1,15 +1,11 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using Styx;
 using Styx.Helpers;
-
-using Styx.WoWInternals;
-using Styx.WoWInternals.WoWObjects;
-using Styx.WoWInternals.World;
 using Styx.TreeSharp;
-using Action = Styx.TreeSharp.Action;
+using Styx.WoWInternals.World;
+using Styx.WoWInternals.WoWObjects;
 
-namespace HighVoltz.Composites
+namespace HighVoltz.AutoAngler.Composites
 {
     class FaceWaterAction : Action
     {
@@ -23,7 +19,7 @@ namespace HighVoltz.Composites
             if (bestDirection.HasValue &&
                 !WoWMathHelper.IsFacing(_me.Location, _me.Rotation, _me.Location.RayCast(bestDirection.Value, 10f), WoWMathHelper.DegreesToRadians(15)))
             {
-                AutoAngler.Instance.Log("auto facing towards water");
+				AutoAnglerBot.Instance.Log("auto facing towards water");
                 _me.SetFacing(bestDirection.Value);
             }
             return RunStatus.Failure;

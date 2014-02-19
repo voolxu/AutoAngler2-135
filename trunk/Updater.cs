@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 using System.Windows.Media;
 using Styx.Common;
 
-namespace HighVoltz
+namespace HighVoltz.AutoAngler
 {
     internal static class Updater
     {
@@ -20,26 +20,26 @@ namespace HighVoltz
         {
             try
             {
-                AutoAngler.Instance.Log("Checking for new version");
+				AutoAnglerBot.Instance.Log("Checking for new version");
                 int remoteRev = GetRevision();
-                if (AutoAngler.Instance.MySettings.CurrentRevision != remoteRev)
+				if (AutoAnglerBot.Instance.MySettings.CurrentRevision != remoteRev)
                 {
-                    AutoAngler.Instance.Log("A new version was found.Downloading Update");
+					AutoAnglerBot.Instance.Log("A new version was found.Downloading Update");
                     DownloadFilesFromSvn(new WebClient(), PbSvnUrl);
-                    AutoAngler.Instance.Log("Download complete.");
-                    AutoAngler.Instance.MySettings.CurrentRevision = remoteRev;
-                    AutoAngler.Instance.MySettings.Save();
+					AutoAnglerBot.Instance.Log("Download complete.");
+					AutoAnglerBot.Instance.MySettings.CurrentRevision = remoteRev;
+					AutoAnglerBot.Instance.MySettings.Save();
 
                     Logging.Write(Colors.Red, "A new version of AutoAngler was installed. Please restart Honorbuddy");
                 }
                 else
                 {
-                    AutoAngler.Instance.Log("No updates found");
+					AutoAnglerBot.Instance.Log("No updates found");
                 }
             }
             catch (Exception ex)
             {
-                AutoAngler.Instance.Err(ex.ToString());
+				AutoAnglerBot.Instance.Err(ex.ToString());
             }
         }
 
@@ -76,15 +76,15 @@ namespace HighVoltz
                     if (url.Length > PbSvnUrl.Length)
                     {
                         string relativePath = url.Substring(PbSvnUrl.Length);
-                        dirPath = Path.Combine(AutoAngler.BotPath, relativePath);
+						dirPath = Path.Combine(AutoAnglerBot.BotPath, relativePath);
                         filePath = Path.Combine(dirPath, file);
                     }
                     else
                     {
                         dirPath = Environment.CurrentDirectory;
-                        filePath = Path.Combine(AutoAngler.BotPath, file);
+						filePath = Path.Combine(AutoAnglerBot.BotPath, file);
                     }
-                    AutoAngler.Instance.Log("Downloading {0}", file);
+					AutoAnglerBot.Instance.Log("Downloading {0}", file);
                     if (!Directory.Exists(dirPath))
                         Directory.CreateDirectory(dirPath);
                     client.DownloadFile(newUrl, filePath);

@@ -7,14 +7,14 @@ using Styx.CommonBot.POI;
 using Styx.CommonBot.Profiles;
 using Styx.Helpers;
 
-namespace HighVoltz
+namespace HighVoltz.AutoAngler
 {
     public partial class MainForm : Form
     {
         public MainForm()
         {
             InitializeComponent();
-            propertyGrid.SelectedObject = AutoAngler.Instance.MySettings;
+            propertyGrid.SelectedObject = AutoAnglerBot.Instance.MySettings;
         }
 
         private void DonateButtonClick(object sender, EventArgs e)
@@ -54,7 +54,7 @@ namespace HighVoltz
                     ProfileManager.LoadNew(AutoAnglerSettings.Instance.LastLoadedProfile);
                 }
             }
-            AutoAngler.Instance.MySettings.Save();
+			AutoAnglerBot.Instance.MySettings.Save();
         }
 
         private void MailButtonClick(object sender, EventArgs e)
@@ -68,15 +68,15 @@ namespace HighVoltz
                     if (!string.IsNullOrEmpty(CharacterSettings.Instance.MailRecipient))
                     {
                         BotPoi.Current = new BotPoi(mailbox);
-                        AutoAngler.Instance.Log("Forced Mail run");
+						AutoAnglerBot.Instance.Log("Forced Mail run");
                         TreeRoot.StatusText = "Doing Mail Run";
                     }
                     else
-                        AutoAngler.Instance.Log("No mail recipient set");
+						AutoAnglerBot.Instance.Log("No mail recipient set");
                 }
                 else
                 {
-                    AutoAngler.Instance.Log("Profile has no Mailbox");
+					AutoAnglerBot.Instance.Log("Profile has no Mailbox");
                 }
             }
         }

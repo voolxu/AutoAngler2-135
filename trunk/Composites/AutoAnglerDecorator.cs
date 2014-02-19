@@ -1,9 +1,8 @@
 ﻿using Styx;
 using Styx.CommonBot.Routines;
-using Styx.WoWInternals;
 using Styx.TreeSharp;
 
-namespace HighVoltz.Composites
+namespace HighVoltz.AutoAngler.Composites
 {
     internal class AutoAnglerDecorator : Decorator
     {
