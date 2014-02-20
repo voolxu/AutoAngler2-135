@@ -47,7 +47,6 @@ namespace HighVoltz.AutoAngler
         private static int _currentIndex;
         public static readonly string BotPath = GetBotPath();
         public readonly Version Version = new Version(2, new Svn().Revision);
-        private readonly LocalPlayer _me = StyxWoW.Me;
         private AutoAnglerSettings _settings;
 
         public AutoAnglerBot()
@@ -70,7 +69,7 @@ namespace HighVoltz.AutoAngler
                     String.Format(
                         "{0}\\Settings\\AutoAngler\\AutoAngler-{1}",
                         Utilities.AssemblyDirectory,
-                        _me.Name)));
+						StyxWoW.Me.Name)));
             }
         }
 
@@ -119,7 +118,7 @@ namespace HighVoltz.AutoAngler
 				   LevelBot.CreateDeathBehavior(),
                     // If bot is in combat call the CC routine
                     new Decorator(
-                        c => _me.Combat && !_me.IsFlying,
+						c => StyxWoW.Me.Combat && !StyxWoW.Me.IsFlying,
                         new PrioritySelector(
                             // equip weapons since we're in combat.
                             new Decorator(
@@ -144,7 +143,7 @@ namespace HighVoltz.AutoAngler
                     new Decorator(
                         c =>
                             RoutineManager.Current.NeedRest && !StyxWoW.Me.IsCasting &&
-                            !_me.IsFlying,
+							!StyxWoW.Me.IsFlying,
                         new PrioritySelector(
                             // if Rest Behavior exists use it..
                             new Decorator(
@@ -181,7 +180,7 @@ namespace HighVoltz.AutoAngler
                             )),
                     // mail and repair if bags are full or items have low durability. logout if profile doesn't have mailbox and vendor.
                     new Decorator(
-                        c => _me.BagsFull || _me.DurabilityPercent <= 0.2 &&
+						c => StyxWoW.Me.BagsFull || StyxWoW.Me.DurabilityPercent <= 0.2 &&
                              (BotPoi.Current == null ||
                               BotPoi.Current.Type != PoiType.Mail &&
                               BotPoi.Current.Type != PoiType.Repair &&
@@ -509,14 +508,14 @@ namespace HighVoltz.AutoAngler
 
         private WoWItem FindMainHand()
         {
-            WoWItem mainHand = _me.Inventory.Equipped.MainHand;
+			WoWItem mainHand = StyxWoW.Me.Inventory.Equipped.MainHand;
             if (mainHand == null || mainHand.ItemInfo.WeaponClass == WoWItemWeaponClass.FishingPole)
             {
-                mainHand = _me.CarriedItems.OrderByDescending(u => u.ItemInfo.Level).
+				mainHand = StyxWoW.Me.CarriedItems.OrderByDescending(u => u.ItemInfo.Level).
                     FirstOrDefault(
                         i => i.IsSoulbound && (i.ItemInfo.InventoryType == InventoryType.WeaponMainHand ||
                                                i.ItemInfo.InventoryType == InventoryType.TwoHandWeapon) &&
-                             _me.CanEquipItem(i));
+							 StyxWoW.Me.CanEquipItem(i));
                 if (mainHand != null)
                 {
                     MySettings.MainHand = mainHand.Entry;
@@ -533,16 +532,16 @@ namespace HighVoltz.AutoAngler
         // scans bags for offhand weapon if mainhand isn't 2h and none are equipped and uses the highest ilvl one
         private WoWItem FindOffhand()
         {
-            WoWItem offHand = _me.Inventory.Equipped.OffHand;
+			WoWItem offHand = StyxWoW.Me.Inventory.Equipped.OffHand;
             if (offHand == null)
             {
-                offHand = _me.CarriedItems.OrderByDescending(u => u.ItemInfo.Level).
+				offHand = StyxWoW.Me.CarriedItems.OrderByDescending(u => u.ItemInfo.Level).
                     FirstOrDefault(
                         i => i.IsSoulbound && (i.ItemInfo.InventoryType == InventoryType.WeaponOffHand ||
                                                i.ItemInfo.InventoryType == InventoryType.Weapon ||
                                                i.ItemInfo.InventoryType == InventoryType.Shield) &&
                              MySettings.MainHand != i.Entry &&
-                             _me.CanEquipItem(i));
+							 StyxWoW.Me.CanEquipItem(i));
                 if (offHand != null)
                 {
                     MySettings.OffHand = offHand.Entry;

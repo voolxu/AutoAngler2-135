@@ -9,7 +9,6 @@ namespace HighVoltz.AutoAngler.Composites
 {
     class FaceWaterAction : Action
     {
-        private readonly LocalPlayer _me = StyxWoW.Me;
         const float PIx2 = 3.14159f * 2f;
         const int TraceStep = 20;
 
@@ -17,17 +16,17 @@ namespace HighVoltz.AutoAngler.Composites
         {
             float? bestDirection = GetFaceWaterDirection();
             if (bestDirection.HasValue &&
-                !WoWMathHelper.IsFacing(_me.Location, _me.Rotation, _me.Location.RayCast(bestDirection.Value, 10f), WoWMathHelper.DegreesToRadians(15)))
+				!WoWMathHelper.IsFacing(StyxWoW.Me.Location, StyxWoW.Me.Rotation, StyxWoW.Me.Location.RayCast(bestDirection.Value, 10f), WoWMathHelper.DegreesToRadians(15)))
             {
 				AutoAnglerBot.Instance.Log("auto facing towards water");
-                _me.SetFacing(bestDirection.Value);
+				StyxWoW.Me.SetFacing(bestDirection.Value);
             }
             return RunStatus.Failure;
         }
 
         float? GetFaceWaterDirection()
         {
-            WoWPoint playerLoc = _me.Location;
+			WoWPoint playerLoc = StyxWoW.Me.Location;
             var sonar = new List<int>(TraceStep);
             var tracelines = new WorldLine[TraceStep * 3];
             bool[] tracelineRetVals;

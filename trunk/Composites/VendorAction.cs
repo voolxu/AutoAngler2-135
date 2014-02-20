@@ -16,23 +16,21 @@ namespace HighVoltz.AutoAngler.Composites
 {
     public class VendorAction:Action
     {
-         LocalPlayer _me = StyxWoW.Me;
-
          protected override RunStatus Run(object context)
          {
              Vendor ven = BotPoi.Current.AsVendor;
              WoWUnit vendor = ObjectManager.GetObjectsOfType<WoWUnit>().
                         FirstOrDefault(m => m.Entry == ven.Entry || m.Entry == ven.Entry2);
              WoWPoint loc = vendor != null ? vendor.Location : ven.Location;
-             if (_me.Location.Distance(loc) > 4)
+			 if (StyxWoW.Me.Location.Distance(loc) > 4)
              {
 				 if (AutoAnglerBot.Instance.MySettings.Fly)
-                     Flightor.MoveTo(WoWMathHelper.CalculatePointFrom(_me.Location, loc, 4));
+					 Flightor.MoveTo(WoWMathHelper.CalculatePointFrom(StyxWoW.Me.Location, loc, 4));
                  else
                  {
                      if (!StyxWoW.Me.Mounted && Mount.ShouldMount(loc) && Mount.CanMount())
                          Mount.MountUp(() => loc);
-                     Navigator.MoveTo(WoWMathHelper.CalculatePointFrom(_me.Location, loc, 4));
+					 Navigator.MoveTo(WoWMathHelper.CalculatePointFrom(StyxWoW.Me.Location, loc, 4));
                  }
              }
              else
@@ -50,7 +48,7 @@ namespace HighVoltz.AutoAngler.Composites
                  else
                  {
                      // sell all poor and common items not in protected Items list.
-                     List<WoWItem> itemList = _me.BagItems.Where(i => !ProtectedItemsManager.Contains(i.Entry) &&
+					 List<WoWItem> itemList = StyxWoW.Me.BagItems.Where(i => !ProtectedItemsManager.Contains(i.Entry) &&
                          !i.IsSoulbound && !i.IsConjured && 
                          (i.Quality == WoWItemQuality.Poor || i.Quality == WoWItemQuality.Common)).ToList();
                      foreach (var item in itemList)

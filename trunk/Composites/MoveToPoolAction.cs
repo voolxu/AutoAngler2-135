@@ -21,7 +21,6 @@ namespace HighVoltz.AutoAngler.Composites
         public static readonly Stopwatch MoveToPoolSW = new Stopwatch();
         // used to auto blacklist a pool if it takes too long to get to a point.
 
-        private readonly LocalPlayer _me = StyxWoW.Me;
         private readonly Stopwatch _movetoConcludingSW = new Stopwatch();
         private ulong _lastPoolGuid;
 
@@ -126,19 +125,19 @@ namespace HighVoltz.AutoAngler.Composites
                     }
                 }
                 // sort pools by distance to player                
-                PoolPoints.Sort((p1, p2) => p1.Distance(_me.Location).CompareTo(p2.Distance(_me.Location)));
-                if (!_me.IsFlying)
+				PoolPoints.Sort((p1, p2) => p1.Distance(StyxWoW.Me.Location).CompareTo(p2.Distance(StyxWoW.Me.Location)));
+				if (!StyxWoW.Me.IsFlying)
                 {
                     // if we are not flying check if we can genorate a path to points.
                     for (int i = 0; i < PoolPoints.Count;)
                     {
-                        WoWPoint[] testP = Navigator.GeneratePath(_me.Location, PoolPoints[i]);
+						WoWPoint[] testP = Navigator.GeneratePath(StyxWoW.Me.Location, PoolPoints[i]);
                         if (testP.Length > 0)
                         {
                             return true;
                         }
                         PoolPoints.RemoveAt(i);
-                        PoolPoints.Sort((a, b) => a.Distance(_me.Location).CompareTo(b.Distance(_me.Location)));
+						PoolPoints.Sort((a, b) => a.Distance(StyxWoW.Me.Location).CompareTo(b.Distance(StyxWoW.Me.Location)));
                     }
                 }
                 if (PoolPoints.Count > 0)
@@ -255,22 +254,24 @@ namespace HighVoltz.AutoAngler.Composites
                 return RunStatus.Success;// return sucess so Behavior stops and starts at begining on next tick.
             }
             TreeRoot.StatusText = "Moving to " + pool.Name;
-            if (_me.Location.Distance(PoolPoints[0]) > 3)
+			if (StyxWoW.Me.Location.Distance(PoolPoints[0]) > 3)
             {
                 _movetoConcludingSW.Reset();
-                if (!MoveToPoolSW.IsRunning)
-                    MoveToPoolSW.Start();
-                if (_me.IsSwimming)
+	            if (!MoveToPoolSW.IsRunning)
+	            {
+		            MoveToPoolSW.Start();
+	            }
+				if (StyxWoW.Me.IsSwimming)
                 {
-                    if (_me.GetMirrorTimerInfo(MirrorTimerType.Breath).CurrentTime > 0)
+					if (StyxWoW.Me.GetMirrorTimerInfo(MirrorTimerType.Breath).CurrentTime > 0)
                         WoWMovement.Move(WoWMovement.MovementDirection.JumpAscend);
-                    else if (_me.MovementInfo.IsAscending || _me.MovementInfo.JumpingOrShortFalling)
+					else if (StyxWoW.Me.MovementInfo.IsAscending || StyxWoW.Me.MovementInfo.JumpingOrShortFalling)
                         WoWMovement.MoveStop(WoWMovement.MovementDirection.JumpAscend);
                 }
 				if (AutoAnglerBot.Instance.MySettings.Fly)
                 {
                     // don't bother mounting up if we can use navigator to walk over if it's less than 25 units away
-                    if (_me.Location.Distance(PoolPoints[0]) < 25 && !_me.Mounted)
+					if (StyxWoW.Me.Location.Distance(PoolPoints[0]) < 25 && !StyxWoW.Me.Mounted)
                     {
                         MoveResult moveResult = Navigator.MoveTo(PoolPoints[0]);
                         if (moveResult == MoveResult.Failed || moveResult == MoveResult.PathGenerationFailed)
@@ -280,9 +281,9 @@ namespace HighVoltz.AutoAngler.Composites
                         else
                             return RunStatus.Success;
                     }
-                    else if (!_me.Mounted && !SpellManager.GlobalCooldown)
+					else if (!StyxWoW.Me.Mounted && !SpellManager.GlobalCooldown)
                         Flightor.MountHelper.MountUp();
-                    Flightor.MoveTo(WoWMathHelper.CalculatePointFrom(_me.Location, PoolPoints[0], -1f));
+					Flightor.MoveTo(WoWMathHelper.CalculatePointFrom(StyxWoW.Me.Location, PoolPoints[0], -1f));
                 }
                 else
                 {
@@ -295,7 +296,7 @@ namespace HighVoltz.AutoAngler.Composites
                         if (!RemovePointAtTop(pool))
                             return RunStatus.Success;
 						AutoAnglerBot.Instance.Debug("Unable to path to pool point, switching to a new point");
-                        PoolPoints.Sort((a, b) => a.Distance(_me.Location).CompareTo(b.Distance(_me.Location)));
+						PoolPoints.Sort((a, b) => a.Distance(StyxWoW.Me.Location).CompareTo(b.Distance(StyxWoW.Me.Location)));
                     }
                 }
                 // if it takes more than 25 seconds to get to a point remove that point and try another.
@@ -313,14 +314,14 @@ namespace HighVoltz.AutoAngler.Composites
                 _movetoConcludingSW.Start();
             if (_movetoConcludingSW.ElapsedMilliseconds < 1500)
             {
-                if (_me.Location.Distance2D(PoolPoints[0]) > 0.5)
+				if (StyxWoW.Me.Location.Distance2D(PoolPoints[0]) > 0.5)
                     WoWMovement.ClickToMove(PoolPoints[0]);
                 return RunStatus.Success;
             }
-            if (_me.Mounted)
+			if (StyxWoW.Me.Mounted)
             {
-                if (_me.Class == WoWClass.Druid &&
-                    (_me.Shapeshift == ShapeshiftForm.FlightForm || _me.Shapeshift == ShapeshiftForm.EpicFlightForm))
+				if (StyxWoW.Me.Class == WoWClass.Druid &&
+					(StyxWoW.Me.Shapeshift == ShapeshiftForm.FlightForm || StyxWoW.Me.Shapeshift == ShapeshiftForm.EpicFlightForm))
                 {
                     Lua.DoString("CancelShapeshiftForm()");
                 }
@@ -328,7 +329,7 @@ namespace HighVoltz.AutoAngler.Composites
                     Lua.DoString("Dismount()");
             }
             // can't fish while swimming..
-            if (_me.IsSwimming && !WaterWalking.CanCast)
+			if (StyxWoW.Me.IsSwimming && !WaterWalking.CanCast)
             {
 				AutoAnglerBot.Instance.Debug("Moving to new PoolPoint since I'm swimming at current PoolPoint");
                 RemovePointAtTop(pool);

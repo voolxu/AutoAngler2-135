@@ -6,12 +6,10 @@ namespace HighVoltz.AutoAngler.Composites
 {
     public class WaterWalkingAction : Action
     {
-        private readonly LocalPlayer _me = StyxWoW.Me;
-
         protected override RunStatus Run(object context)
         {
             // refresh water walking if needed
-            if (!_me.Mounted && WaterWalking.CanCast && (!WaterWalking.IsActive || _me.IsSwimming))
+			if (!StyxWoW.Me.Mounted && WaterWalking.CanCast && (!WaterWalking.IsActive || StyxWoW.Me.IsSwimming))
             {
                 WaterWalking.Cast();
                 return RunStatus.Success;

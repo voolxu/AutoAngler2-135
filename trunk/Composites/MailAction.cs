@@ -14,8 +14,6 @@ namespace HighVoltz.AutoAngler.Composites
 {
     public class MailAction : Action
     {
-        private readonly LocalPlayer _me = StyxWoW.Me;
-
         protected override RunStatus Run(object context)
         {
             WoWPoint mboxLoc = BotPoi.Current.Location;
@@ -24,15 +22,15 @@ namespace HighVoltz.AutoAngler.Composites
                                     m.Location.Distance(mboxLoc) < 10);
             WoWPoint loc = mailbox != null ? mailbox.Location : mboxLoc;
 
-            if (_me.Location.Distance(loc) > 4)
+			if (StyxWoW.Me.Location.Distance(loc) > 4)
             {
 				if (AutoAnglerBot.Instance.MySettings.Fly)
-                    Flightor.MoveTo(WoWMathHelper.CalculatePointFrom(_me.Location, loc, 3));
+					Flightor.MoveTo(WoWMathHelper.CalculatePointFrom(StyxWoW.Me.Location, loc, 3));
                 else
                 {
                     if (!StyxWoW.Me.Mounted && Mount.ShouldMount(loc) && Mount.CanMount())
                         Mount.MountUp(() => loc);
-                    Navigator.MoveTo(WoWMathHelper.CalculatePointFrom(_me.Location, loc, 4));
+					Navigator.MoveTo(WoWMathHelper.CalculatePointFrom(StyxWoW.Me.Location, loc, 4));
                 }
             }
             else
@@ -58,7 +56,7 @@ namespace HighVoltz.AutoAngler.Composites
                     {
 // mail all except grey items which we will vendor.
                         MailFrame.Instance.SendMailWithManyAttachments(CharacterSettings.Instance.MailRecipient, 0,
-                                                                       _me.BagItems.Where(
+																	   StyxWoW.Me.BagItems.Where(
                                                                            i => !i.IsSoulbound && !i.IsConjured &&
                                                                                 i.Quality != WoWItemQuality.Poor &&
                                                                                 !ProtectedItemsManager.Contains(i.Entry))
@@ -70,7 +68,7 @@ namespace HighVoltz.AutoAngler.Composites
                     {
                         // mail all since no vender is in profile
                         MailFrame.Instance.SendMailWithManyAttachments(CharacterSettings.Instance.MailRecipient, 0,
-                                                                       _me.BagItems.Where(
+																	   StyxWoW.Me.BagItems.Where(
                                                                            i => !i.IsSoulbound && !i.IsConjured &&
                                                                                 !ProtectedItemsManager.Contains(i.Entry))
                                                                            .
