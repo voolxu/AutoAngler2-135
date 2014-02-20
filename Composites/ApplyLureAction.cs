@@ -25,11 +25,10 @@ namespace HighVoltz.AutoAngler.Composites
                                                                      };
 
         private readonly Stopwatch _lureRecastSW = new Stopwatch();
-        private readonly LocalPlayer _me = StyxWoW.Me;
 
         protected override RunStatus Run(object context)
         {
-            if (!_me.IsCasting && !Utils.IsLureOnPole && Applylure())
+            if (!StyxWoW.Me.IsCasting && !Utils.IsLureOnPole && Applylure())
                 return RunStatus.Success;
             return RunStatus.Failure;
         }
@@ -48,13 +47,13 @@ namespace HighVoltz.AutoAngler.Composites
                 return false;
             _lureRecastSW.Reset();
             _lureRecastSW.Start();
-            if (_me.Inventory.Equipped.MainHand != null &&
-                _me.Inventory.Equipped.MainHand.ItemInfo.WeaponClass != WoWItemWeaponClass.FishingPole)
+			if (StyxWoW.Me.Inventory.Equipped.MainHand != null &&
+				StyxWoW.Me.Inventory.Equipped.MainHand.ItemInfo.WeaponClass != WoWItemWeaponClass.FishingPole)
                 return false;
 
             //Awesome panda lure
             WoWItem pandalure = StyxWoW.Me.BagItems.FirstOrDefault(r => r.Entry == 85973);
-            if (pandalure != null && !_me.HasAura(125167))
+			if (pandalure != null && !StyxWoW.Me.HasAura(125167))
             {
 				AutoAnglerBot.Instance.Log("Appling awesome panda lure");
                 Utils.UseItemByID(85973);
@@ -62,7 +61,7 @@ namespace HighVoltz.AutoAngler.Composites
             }
 
             // Fishing Hats
-            WoWItem head = _me.Inventory.GetItemBySlot((uint)WoWEquipSlot.Head);
+			WoWItem head = StyxWoW.Me.Inventory.GetItemBySlot((uint)WoWEquipSlot.Head);
             if (head != null && (head.Entry == 88710 || head.Entry == 33820))
             {
 				AutoAnglerBot.Instance.Log("Appling Fishing Hat lure to fishing pole");

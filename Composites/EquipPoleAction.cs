@@ -7,13 +7,11 @@ namespace HighVoltz.AutoAngler.Composites
 {
     public class EquipPoleAction : Action
     {
-        private readonly LocalPlayer _me = StyxWoW.Me;
-
         protected override RunStatus Run(object context)
         {
             // equip fishing pole if there's none equipped
-            if (_me.Inventory.Equipped.MainHand == null ||
-                _me.Inventory.Equipped.MainHand.ItemInfo.WeaponClass != WoWItemWeaponClass.FishingPole)
+			if (StyxWoW.Me.Inventory.Equipped.MainHand == null ||
+				StyxWoW.Me.Inventory.Equipped.MainHand.ItemInfo.WeaponClass != WoWItemWeaponClass.FishingPole)
             {
                 if (EquipPole())
                     return RunStatus.Success;
@@ -23,7 +21,7 @@ namespace HighVoltz.AutoAngler.Composites
 
         private bool EquipPole()
         {
-            WoWItem pole = _me.BagItems.FirstOrDefault(i => i.ItemInfo.WeaponClass == WoWItemWeaponClass.FishingPole);
+			WoWItem pole = StyxWoW.Me.BagItems.FirstOrDefault(i => i.ItemInfo.WeaponClass == WoWItemWeaponClass.FishingPole);
             if (pole != null)
             {
 				AutoAnglerBot.Instance.Log("Equipping " + pole.Name);

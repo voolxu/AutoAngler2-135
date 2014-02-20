@@ -10,8 +10,6 @@ namespace HighVoltz.AutoAngler.Composites
 {
     public class FollowPathAction : Action
     {
-
-        private readonly LocalPlayer _me = StyxWoW.Me;
 		private readonly AutoAnglerSettings _settings = AutoAnglerBot.Instance.MySettings;
 
         protected override RunStatus Run(object context)
@@ -38,11 +36,11 @@ namespace HighVoltz.AutoAngler.Composites
 				AutoAnglerBot.CycleToNextPoint();
             if (_settings.Fly)
             {
-                if (_me.IsSwimming)
+				if (StyxWoW.Me.IsSwimming)
                 {
-                    if (_me.GetMirrorTimerInfo(MirrorTimerType.Breath).CurrentTime > 0)
+					if (StyxWoW.Me.GetMirrorTimerInfo(MirrorTimerType.Breath).CurrentTime > 0)
                         WoWMovement.Move(WoWMovement.MovementDirection.JumpAscend);
-                    else if (_me.MovementInfo.IsAscending || _me.MovementInfo.JumpingOrShortFalling)
+					else if (StyxWoW.Me.MovementInfo.IsAscending || StyxWoW.Me.MovementInfo.JumpingOrShortFalling)
                         WoWMovement.MoveStop(WoWMovement.MovementDirection.JumpAscend);
                 }
                 if (!StyxWoW.Me.Mounted)
