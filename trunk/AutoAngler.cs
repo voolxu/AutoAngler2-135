@@ -482,7 +482,7 @@ namespace HighVoltz.AutoAngler
                     // keep the bot from going afk.
                     if (antiAfkTimer.IsFinished)
                     {
-                        KeyboardManager.AntiAfk();
+                        StyxWoW.ResetAfk();
                         antiAfkTimer.Reset();
                     }
                     return RunStatus.Failure;
