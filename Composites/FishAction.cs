@@ -119,16 +119,6 @@ namespace HighVoltz.AutoAngler.Composites
             return RunStatus.Success;
         }
 
-		//public static TimeSpan DelayAfterBobberTrigger
-		//{
-		//	get
-		//	{
-		//		return (_random.Next(1, 100) < 85)
-		//			? TimeSpan.FromMilliseconds(_random.Next(300, 700))     // 'normal' delay
-		//			: TimeSpan.FromMilliseconds(_random.Next(600, 2400));   // 'outlier' delay
-		//	}
-		//}
-
         private void CastLine()
         {
             if (LineRecastSW.IsRunning && LineRecastSW.ElapsedMilliseconds < 2000)
@@ -136,6 +126,8 @@ namespace HighVoltz.AutoAngler.Composites
             LineRecastSW.Reset();
             _castCounter++;
             SpellManager.Cast("Fishing");
+			StyxWoW.ResetAfk();
+			InactivityDetector.Reset();
             LineRecastSW.Start();
         }
 

@@ -51,7 +51,11 @@ namespace HighVoltz.AutoAngler.Composites
             {
 				if (!StyxWoW.Me.Mounted && Mount.ShouldMount(AutoAnglerBot.CurrentPoint) && Mount.CanMount())
 					Mount.MountUp(() => AutoAnglerBot.CurrentPoint);
-				Navigator.MoveTo(AutoAnglerBot.CurrentPoint);
+				var result = Navigator.MoveTo(AutoAnglerBot.CurrentPoint);
+	            if (result != MoveResult.Failed && result != MoveResult.PathGenerationFailed)
+	            {
+					InactivityDetector.Reset();
+	            }
             }
             return RunStatus.Success;
         }
