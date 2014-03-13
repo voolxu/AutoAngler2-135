@@ -13,6 +13,10 @@ namespace HighVoltz.AutoAngler
 
         public static AutoAnglerSettings Instance { get; private set; }
 
+		[Setting, Styx.Helpers.DefaultValue(0u), 
+		Description("Wowhead Id of the hat to switch to when not fishing"), Category("Weapon")]
+		public uint Hat { get; set; }
+
         [Setting, Styx.Helpers.DefaultValue(0u), Description("Wowhead Id of the mainhand weapon to switch to when in combat"), Category("Weapon")]
         public uint MainHand { get; set; }
 

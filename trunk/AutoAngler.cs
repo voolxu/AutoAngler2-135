@@ -104,7 +104,7 @@ namespace HighVoltz.AutoAngler
 
         public override PulseFlags PulseFlags
         {
-            get { return PulseFlags.All; }
+            get { return PulseFlags.All & (~PulseFlags.CharacterManager); }
         }
 
         public override Composite Root
@@ -309,6 +309,11 @@ namespace HighVoltz.AutoAngler
         {
             Log("Equipping weapons");
             Utils.EquipWeapon();
+	        if (Utils.EquipMainHat())
+	        {
+				Log("Switched to my normal hat");
+	        }
+
             Log(
                 "In {0} days, {1} hours and {2} minutes we have caught",
                 (DateTime.Now - _botStartTime).Days,

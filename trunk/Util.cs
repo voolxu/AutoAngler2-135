@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using Styx;
+using Styx.Common.Helpers;
 using Styx.CommonBot;
 using Styx.CommonBot.POI;
 using Styx.Helpers;
@@ -13,31 +15,6 @@ namespace HighVoltz.AutoAngler
     static class Utils
     {
 	    public static readonly Random Rnd = new Random();
-
-        public static bool IsLureOnPole
-        {
-            get
-            {
-                bool useHatLure = false;
-
-                var head = StyxWoW.Me.Inventory.GetItemBySlot((uint)WoWEquipSlot.Head);
-                if (head != null && (head.Entry == 88710 || head.Entry == 33820))
-                    useHatLure = true;
-
-                var lure = StyxWoW.Me.BagItems.FirstOrDefault(r => r.Entry == 85973);
-				if (AutoAnglerBot.Instance.MySettings.Poolfishing && lure != null && !StyxWoW.Me.HasAura(125167))
-                {
-                    return false;
-                }
-
-                //if poolfishing, dont need lure say we have one
-				if (AutoAnglerBot.Instance.MySettings.Poolfishing && !useHatLure && !AutoAnglerBot.FishAtHotspot)
-                    return true;
-
-                var ret = Lua.GetReturnValues("return GetWeaponEnchantInfo()");
-                return ret != null && ret.Count > 0 && ret[0] == "1";
-            }
-        }
 
 	    static TimeCachedValue<uint> _wowPing;
         /// <summary>
@@ -64,15 +41,18 @@ namespace HighVoltz.AutoAngler
 
         public static void EquipWeapon()
         {
+	        if (StyxWoW.Me.ChanneledCastingSpellId != 0)
+				SpellManager.StopCasting();
+
             bool is2Hand = false;
             // equip right hand weapon
 			uint mainHandID = AutoAnglerBot.Instance.MySettings.MainHand;
             WoWItem mainHand = StyxWoW.Me.Inventory.Equipped.MainHand;
-            if (mainHand == null || (mainHand.Entry != mainHandID && Utils.IsItemInBag(mainHandID)))
+            if (mainHand == null || (mainHand.Entry != mainHandID && IsItemInBag(mainHandID)))
             {
 				var weapon = StyxWoW.Me.BagItems.FirstOrDefault(i => i.Entry == AutoAnglerBot.Instance.MySettings.MainHand);
                 is2Hand = weapon.ItemInfo.InventoryType == InventoryType.TwoHandWeapon || weapon.ItemInfo.InventoryType == InventoryType.Ranged;
-				Utils.EquipItemByID(AutoAnglerBot.Instance.MySettings.MainHand);
+				EquipItemByID(AutoAnglerBot.Instance.MySettings.MainHand);
             }
 
             // equip left hand weapon
@@ -80,11 +60,50 @@ namespace HighVoltz.AutoAngler
             WoWItem offhand = StyxWoW.Me.Inventory.Equipped.OffHand;
 
             if ((!is2Hand && offhandID > 0 &&
-                 (offhand == null || (offhand.Entry != offhandID && Utils.IsItemInBag(offhandID)))))
+                 (offhand == null || (offhand.Entry != offhandID && IsItemInBag(offhandID)))))
             {
-				Utils.EquipItemByID(AutoAnglerBot.Instance.MySettings.OffHand);
+				EquipItemByID(AutoAnglerBot.Instance.MySettings.OffHand);
             }
         }
+
+		public static bool EquipMainHat()
+		{
+			if (StyxWoW.Me.Combat)
+				return false;
+
+			if (StyxWoW.Me.ChanneledCastingSpellId != 0)
+				SpellManager.StopCasting();
+
+			WoWItem hat = StyxWoW.Me.Inventory.Equipped.Head;
+
+			// if not wearing a fishing hat then return
+			if (hat != null && !FishingHatIds.Contains(hat.Entry))
+			{
+				return false;
+			}
+
+			// try to find a hat to wear automatically
+			if (AutoAnglerSettings.Instance.Hat == 0)
+			{
+				var bestHat = StyxWoW.Me.BagItems.Where(i => i != null && i.IsValid && i.ItemInfo.EquipSlot == InventoryType.Head)
+					.OrderByDescending(i => i.ItemInfo.Level)
+					.FirstOrDefault();
+				if (bestHat != null)
+				{
+					AutoAnglerSettings.Instance.Hat = bestHat.Entry;
+					AutoAnglerSettings.Instance.Save();
+				}
+			}
+			
+			// if regular hat is already equipped or not in bags then return
+			if ((hat != null && hat.Entry == AutoAnglerSettings.Instance.Hat) || !IsItemInBag(AutoAnglerSettings.Instance.Hat))
+			{
+				return false;
+			}
+
+			EquipItemByID(AutoAnglerSettings.Instance.Hat);
+			return true;
+		}
 
         public static void UseItemByID(int id)
         {
@@ -107,5 +126,12 @@ namespace HighVoltz.AutoAngler
 			AutoAnglerBot.Instance.Log("Blacklisting {0} for {1} Reason: {2}", pool.Name, time, reason);
             BotPoi.Current = new BotPoi(PoiType.None);
         }
+
+	    internal static readonly uint[] FishingHatIds =
+	    {
+			33820, // Weather-Beaten Fishing Hat
+			88710 , // Nat's Hat
+		};
+
     }
 }
