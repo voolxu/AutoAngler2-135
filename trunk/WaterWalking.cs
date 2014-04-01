@@ -43,7 +43,9 @@ namespace HighVoltz.AutoAngler
 						|| IsAuraActive("Unending Breath", MinimumWaterWalkingTimeLeft)
 						|| IsAuraActive("Bipsi's Bobbing Berg", MinimumWaterWalkingTimeLeft)
 						|| IsAuraActive("Path of Frost")
-						|| IsAuraActive("Surface Trot");
+						|| IsAuraActive("Surface Trot")
+						// Only active when in the Inkgill Mere area in MOP
+						|| IsAuraActive("Blessing of the Inkgill");
 			}
 		}
 
