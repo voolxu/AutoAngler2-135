@@ -99,7 +99,7 @@
 xcopy "$(ProjectDir)*.xml" "C:\Buddy\Projects\Honorbuddy\Honorbuddy\bin\Debug\Bots\AutoAngler2" /I /S /Y /D</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PreBuildEvent>SubWCRev.exe $(ProjectDir) $(ProjectDir)\SVN.template $(ProjectDir)\SVN.cs</PreBuildEvent>
+    <PreBuildEvent>SubWCRev.exe $(ProjectDir) $(ProjectDir)SVN.template $(ProjectDir)\SVN.cs</PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
