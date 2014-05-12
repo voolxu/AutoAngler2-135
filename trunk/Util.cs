@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using Styx;
+using Styx.Common;
 using Styx.Common.Helpers;
 using Styx.CommonBot;
 using Styx.CommonBot.POI;
@@ -47,22 +48,36 @@ namespace HighVoltz.AutoAngler
             bool is2Hand = false;
             // equip right hand weapon
 			uint mainHandID = AutoAnglerBot.Instance.MySettings.MainHand;
-            WoWItem mainHand = StyxWoW.Me.Inventory.Equipped.MainHand;
-            if (mainHand == null || (mainHand.Entry != mainHandID && IsItemInBag(mainHandID)))
+            WoWItem equippedMainHand = StyxWoW.Me.Inventory.Equipped.MainHand;
+	        WoWItem wantedMainHand = null;
+	        if (equippedMainHand == null || (equippedMainHand.Entry != mainHandID && IsItemInBag(mainHandID)))
             {
-				var weapon = StyxWoW.Me.BagItems.FirstOrDefault(i => i.Entry == AutoAnglerBot.Instance.MySettings.MainHand);
-                is2Hand = weapon.ItemInfo.InventoryType == InventoryType.TwoHandWeapon || weapon.ItemInfo.InventoryType == InventoryType.Ranged;
-				EquipItemByID(AutoAnglerBot.Instance.MySettings.MainHand);
+				wantedMainHand = StyxWoW.Me.BagItems
+					.FirstOrDefault(i => i.Entry == AutoAnglerBot.Instance.MySettings.MainHand );
+				if (wantedMainHand == null)
+	            {
+		            Logging.Write("Could not find a mainhand weapon to equip");
+		            return;
+	            }
+				is2Hand = wantedMainHand.ItemInfo.InventoryType == InventoryType.TwoHandWeapon
+					|| wantedMainHand.ItemInfo.InventoryType == InventoryType.Ranged;
+				wantedMainHand.UseContainerItem();
             }
 
             // equip left hand weapon
 			uint offhandID = AutoAnglerBot.Instance.MySettings.OffHand;
-            WoWItem offhand = StyxWoW.Me.Inventory.Equipped.OffHand;
+			WoWItem equippedOffHand = StyxWoW.Me.Inventory.Equipped.OffHand;
 
-            if ((!is2Hand && offhandID > 0 &&
-                 (offhand == null || (offhand.Entry != offhandID && IsItemInBag(offhandID)))))
+			if ((!is2Hand && offhandID > 0 && (equippedOffHand == null || equippedOffHand.Entry != offhandID)))
             {
-				EquipItemByID(AutoAnglerBot.Instance.MySettings.OffHand);
+				WoWItem wantedOffHand = StyxWoW.Me.BagItems
+					.FirstOrDefault(i => i.Entry == AutoAnglerBot.Instance.MySettings.OffHand && i != wantedMainHand);
+				if (wantedOffHand == null)
+				{
+					Logging.Write("Could not find a offhand weapon to equip");
+					return;
+				}
+				wantedOffHand.UseContainerItem();
             }
         }
 
