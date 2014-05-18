@@ -65,11 +65,9 @@ namespace HighVoltz.AutoAngler
         {
             get
             {
-                return _settings ?? (_settings = new AutoAnglerSettings(
-                    String.Format(
-                        "{0}\\Settings\\AutoAngler\\AutoAngler-{1}",
-                        Utilities.AssemblyDirectory,
-						StyxWoW.Me.Name)));
+	            return _settings ?? 
+					(_settings = new AutoAnglerSettings(
+						Path.Combine(Settings.CharacterSettingsDirectory, "AutoAngler.xml")));
             }
         }
 
@@ -286,8 +284,11 @@ namespace HighVoltz.AutoAngler
                 {
                     ProfileManager.LoadNew(MySettings.LastLoadedProfile);
                 }
-                // check for Autoangler updates
-                new Thread(Updater.CheckForUpdate) {IsBackground = true}.Start();
+	            if (AutoAnglerSettings.Instance.AutoUpdate)
+	            {
+		            // check for Autoangler updates
+		            new Thread(Updater.CheckForUpdate) {IsBackground = true}.Start();
+	            }
             }
             catch (Exception ex)
             {
