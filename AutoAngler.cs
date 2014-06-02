@@ -171,6 +171,9 @@ namespace HighVoltz.AutoAngler
 			LootTargeting.Instance.IncludeTargetsFilter -= LootFilters.IncludeTargetsFilter;
             Lua.Events.DetachEvent("LOOT_OPENED", LootFrameOpenedHandler);
             Lua.Events.DetachEvent("LOOT_CLOSED", LootFrameClosedHandler);
+
+			if (!string.IsNullOrEmpty(_prevProfilePath) && File.Exists(_prevProfilePath))
+				ProfileManager.LoadNew(_prevProfilePath);
         }
 
         #endregion
