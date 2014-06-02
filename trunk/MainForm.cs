@@ -14,25 +14,9 @@ namespace HighVoltz.AutoAngler
         public MainForm()
         {
             InitializeComponent();
-            propertyGrid.SelectedObject = AutoAnglerBot.Instance.MySettings;
+			propertyGrid.SelectedObject = AutoAnglerSettings.Instance;
         }
 
-        private void DonateButtonClick(object sender, EventArgs e)
-        {
-            // my debug button :)
-            if (Environment.UserName == "highvoltz")
-            {
-
-            }
-            else
-                Process.Start(
-                    "https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=MMC4GPHR8GQFN&lc=US&item_name=Highvoltz%27s%20Development%20fund&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_LG%2egif%3aNonHosted");
-        }
-
-        private void RepButtonClick(object sender, EventArgs e)
-        {
-            Process.Start("http://www.thebuddyforum.com/reputation.php?do=addreputation&p=343952");
-        }
 
         private void PropertyGridPropertyValueChanged(object s, PropertyValueChangedEventArgs e)
         {
@@ -54,7 +38,7 @@ namespace HighVoltz.AutoAngler
                     ProfileManager.LoadNew(AutoAnglerSettings.Instance.LastLoadedProfile);
                 }
             }
-			AutoAnglerBot.Instance.MySettings.Save();
+			AutoAnglerSettings.Instance.Save();
         }
 
         private void MailButtonClick(object sender, EventArgs e)
@@ -68,15 +52,15 @@ namespace HighVoltz.AutoAngler
                     if (!string.IsNullOrEmpty(CharacterSettings.Instance.MailRecipient))
                     {
                         BotPoi.Current = new BotPoi(mailbox);
-						AutoAnglerBot.Instance.Log("Forced Mail run");
+						AutoAnglerBot.Log("Forced Mail run");
                         TreeRoot.StatusText = "Doing Mail Run";
                     }
                     else
-						AutoAnglerBot.Instance.Log("No mail recipient set");
+						AutoAnglerBot.Log("No mail recipient set");
                 }
                 else
                 {
-					AutoAnglerBot.Instance.Log("Profile has no Mailbox");
+					AutoAnglerBot.Log("Profile has no Mailbox");
                 }
             }
         }

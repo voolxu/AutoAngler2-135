@@ -20,26 +20,28 @@ namespace HighVoltz.AutoAngler
         {
             try
             {
-				AutoAnglerBot.Instance.Log("Checking for new version");
+				AutoAnglerBot.Log("Checking for new version");
                 int remoteRev = GetRevision();
-				if (AutoAnglerBot.Instance.MySettings.CurrentRevision != remoteRev)
+				if (AutoAnglerSettings.Instance.CurrentRevision != remoteRev)
                 {
-					AutoAnglerBot.Instance.Log("A new version was found.Downloading Update");
+					AutoAnglerBot.Log("A new version was found.");
+
+					AutoAnglerBot.Log("Downloading Update");
                     DownloadFilesFromSvn(new WebClient(), PbSvnUrl);
-					AutoAnglerBot.Instance.Log("Download complete.");
-					AutoAnglerBot.Instance.MySettings.CurrentRevision = remoteRev;
-					AutoAnglerBot.Instance.MySettings.Save();
+					AutoAnglerBot.Log("Download complete.");
+					AutoAnglerSettings.Instance.CurrentRevision = remoteRev;
+					AutoAnglerSettings.Instance.Save();
 
                     Logging.Write(Colors.Red, "A new version of AutoAngler was installed. Please restart Honorbuddy");
                 }
                 else
                 {
-					AutoAnglerBot.Instance.Log("No updates found");
+					AutoAnglerBot.Log("No updates found");
                 }
             }
             catch (Exception ex)
             {
-				AutoAnglerBot.Instance.Err(ex.ToString());
+				AutoAnglerBot.Err(ex.ToString());
             }
         }
 
@@ -84,7 +86,7 @@ namespace HighVoltz.AutoAngler
                         dirPath = Environment.CurrentDirectory;
 						filePath = Path.Combine(AutoAnglerBot.BotPath, file);
                     }
-					AutoAnglerBot.Instance.Log("Downloading {0}", file);
+					AutoAnglerBot.Log("Downloading {0}", file);
                     if (!Directory.Exists(dirPath))
                         Directory.CreateDirectory(dirPath);
                     client.DownloadFile(newUrl, filePath);
