@@ -1,17 +1,25 @@
 ﻿using System.ComponentModel;
+using System.IO;
 using Styx.Helpers;
 
 namespace HighVoltz.AutoAngler
 {
 	public class AutoAnglerSettings : Settings
 	{
-		public AutoAnglerSettings(string path) : base(path)
+		public static AutoAnglerSettings Instance { get; private set; }
+
+		static AutoAnglerSettings()
+		{
+			Instance = new AutoAnglerSettings(Path.Combine(CharacterSettingsDirectory, "AutoAngler.xml"));
+		}
+
+		private AutoAnglerSettings(string path)
+			: base(path)
 		{
 			Instance = this;
 			Load();
 		}
 
-		public static AutoAnglerSettings Instance { get; private set; }
 
 		[Setting, Styx.Helpers.DefaultValue("")]
 		public string LastLoadedProfile { get; set; }
@@ -93,15 +101,6 @@ namespace HighVoltz.AutoAngler
 			),
 		Category("Advanced")]
 		public int TraceStep { get; set; }
-
-		[Setting, Styx.Helpers.DefaultValue(10), Description("Min range to stand at a pool, between 10 and 14 recomended"),
-		Category("Advanced")]
-		public int MinPoolRange { get; set; }
-
-		[Setting, Styx.Helpers.DefaultValue(20),
-		Description("Max range to stand at a pool, 22 is maximum you should go. Recommended range is 18-22 (20 is probably best)"),
-		Category("Advanced")]
-		public int MaxPoolRange { get; set; }
 
 		[Setting, Styx.Helpers.DefaultValue(0.5f),
 		Description(

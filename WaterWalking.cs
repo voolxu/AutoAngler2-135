@@ -1,9 +1,16 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Buddy.Coroutines;
 using Styx;
+using Styx.Common.Helpers;
 using Styx.CommonBot;
+using Styx.CommonBot.Coroutines;
+using Styx.CommonBot.POI;
 using Styx.Helpers;
+using Styx.Pathing;
 using Styx.WoWInternals;
 using Styx.WoWInternals.WoWObjects;
 
@@ -11,22 +18,20 @@ namespace HighVoltz.AutoAngler
 {
 	public class WaterWalking
 	{
-		private static readonly Stopwatch RecastSW = new Stopwatch();
-
-		private static string[] _waterWalkingAbilities = { "Levitate", "Water Walking", "Path of Frost" };
+		private static readonly WaitTimer RecastTimer = WaitTimer.FiveSeconds;
 
 		public static bool CanCast
 		{
 			get
 			{
-				return AutoAnglerBot.Instance.MySettings.UseWaterWalking &&
+				return AutoAnglerSettings.Instance.UseWaterWalking &&
 					   (SpellManager.HasSpell("Levitate") || // priest levitate
 						SpellManager.HasSpell("Water Walking") || // shaman water walking
-						SpellManager.HasSpell("Path of Frost") || // Dk Path of frost
+						SpellManager.HasSpell(PathOfFrostSpellId) || // Dk Path of frost
 						SpellManager.HasSpell("Soulburn") || // Affliction Warlock
 						StyxWoW.Me.HasAura("Still Water") || // hunter with water strider pet.
-						Utils.IsItemInBag(ElixirOfWaterWalkingId) || //isItemInBag(8827);
-						Utils.IsItemInBag(FishingRaftId)); // Anglers Fishing Raft
+						Utility.IsItemInBag(ElixirOfWaterWalkingId) || //isItemInBag(8827);
+						Utility.IsItemInBag(FishingRaftId)); // Anglers Fishing Raft
 			}
 		}
 
@@ -42,8 +47,8 @@ namespace HighVoltz.AutoAngler
 						|| IsAuraActive("Water Walking", MinimumWaterWalkingTimeLeft)
 						|| IsAuraActive("Unending Breath", MinimumWaterWalkingTimeLeft)
 						|| IsAuraActive("Bipsi's Bobbing Berg", MinimumWaterWalkingTimeLeft)
-						|| IsAuraActive("Path of Frost")
-						|| IsAuraActive("Surface Trot")
+						|| IsAuraActive(PathOfFrostSpellId, MinimumWaterWalkingTimeLeft)
+						|| IsAuraActive("Surface Trot", MinimumWaterWalkingTimeLeft)
 						// Only active when in the Inkgill Mere area in MOP
 						|| IsAuraActive("Blessing of the Inkgill");
 			}
@@ -51,22 +56,27 @@ namespace HighVoltz.AutoAngler
 
 		static bool IsAuraActive(string auraName, TimeSpan? minTimeLeft = null)
 		{
-			var aura = StyxWoW.Me.GetAuraByName(auraName);
+			return IsAuraActive(StyxWoW.Me.GetAuraByName(auraName), minTimeLeft);
+		}
+
+		static bool IsAuraActive(int auraId, TimeSpan? minTimeLeft = null)
+		{
+			return IsAuraActive(StyxWoW.Me.GetAuraById(auraId), minTimeLeft);
+		}
+
+		static bool IsAuraActive(WoWAura aura, TimeSpan? minTimeLeft = null)
+		{
 			return aura != null && (minTimeLeft == null || aura.TimeLeft >= minTimeLeft);
 		}
 
-		public static bool Cast()
+		public static async Task<bool> Cast()
 		{
-			WoWItem fishingRaft;
-			WoWItem waterPot;
-
 			bool casted = false;
 			if (!IsActive)
 			{
-				if (RecastSW.IsRunning && RecastSW.ElapsedMilliseconds < 5000)
+				if (!RecastTimer.IsFinished)
 					return false;
-				RecastSW.Reset();
-				RecastSW.Start();
+
 				int waterwalkingSpellID = 0;
 				switch (StyxWoW.Me.Class)
 				{
@@ -96,24 +106,70 @@ namespace HighVoltz.AutoAngler
 					Lua.DoString("CastSpellByID ({0})", waterwalkingSpellID);
 					casted = true;
 				}
-				else if ((waterPot = Utils.GetIteminBag(ElixirOfWaterWalkingId)) != null && waterPot.Use())
+				else
 				{
-					casted = true;
-				}
-				else if ((fishingRaft = Utils.GetIteminBag(FishingRaftId)) != null && fishingRaft.Use())
-				{
-					casted = true;
-				}
-				else if ((fishingRaft = Utils.GetIteminBag(BipsisBobbingBergId)) != null && fishingRaft.Use())
-				{
-					casted = true;
+					WoWItem waterPot;
+					if ((waterPot = Utility.GetItemInBag(ElixirOfWaterWalkingId)) != null && waterPot.Use())
+					{
+						casted = true;
+					}
+					else
+					{
+						WoWItem fishingRaft;
+						if ((fishingRaft = Utility.GetItemInBag(FishingRaftId)) != null && fishingRaft.Use())
+						{
+							casted = true;
+						}
+						else if ((fishingRaft = Utility.GetItemInBag(BipsisBobbingBergId)) != null && fishingRaft.Use())
+						{
+							casted = true;
+						}
+					}
 				}
 			}
+			if (casted)
+				await CommonCoroutines.SleepForLagDuration();
+
 			if (StyxWoW.Me.IsSwimming)
 			{
-				StyxWoW.ResetAfk();
-				WoWMovement.Move(WoWMovement.MovementDirection.JumpAscend);
+				AutoAnglerBot.Log("Jumping up on water surface since I'm swimming but have water walking");
+				var sw = Stopwatch.StartNew();
+				while (StyxWoW.Me.IsSwimming)
+				{
+					if (StyxWoW.Me.IsBeingAttacked)
+						return false;
+
+					if (sw.ElapsedMilliseconds > 15000)
+					{
+						var pool = BotPoi.Current.AsObject as WoWGameObject;
+						if (pool != null)
+						{
+							AutoAnglerBot.Log("Moving to another spot since couldn't jump on top.");
+							Coroutines.RemovePointAtTop(pool);								
+						}
+						break;
+					}
+
+					try
+					{
+						// Make sure the player's pitch is not pointing down causing player to not being able to 
+						// water walk
+						Lua.DoString("VehicleAimIncrement(1)");
+						WoWMovement.Move(WoWMovement.MovementDirection.JumpAscend);
+						await Coroutine.Wait(15000, () => StyxWoW.Me.IsFalling || !StyxWoW.Me.IsSwimming);
+					}
+					finally
+					{
+						WoWMovement.MoveStop(WoWMovement.MovementDirection.JumpAscend);
+					}
+					if (await Coroutine.Wait(2000, () => !StyxWoW.Me.IsSwimming && !StyxWoW.Me.IsFalling))
+					{
+						AutoAnglerBot.Log("Successfuly landed on water surface.");
+						break;
+					}
+				}
 			}
+
 			return casted;
 		}
 

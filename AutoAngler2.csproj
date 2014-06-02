@@ -61,22 +61,36 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AutoAngler.cs" />
+    <Compile Include="AutoAnglerProfile.cs" />
     <Compile Include="AutoAnglerSettings.cs" />
     <None Include="SVN.template" />
-    <Compile Include="Composites\ApplyLureAction.cs" />
-    <Compile Include="Composites\AutoAnglerDecorator.cs" />
-    <Compile Include="Composites\EquipPoleAction.cs" />
-    <Compile Include="Composites\FaceWaterAction.cs" />
-    <Compile Include="Composites\FishAction.cs" />
-    <Compile Include="Composites\FollowPathAction.cs" />
-    <Compile Include="Composites\HarvestPoolDecorator.cs" />
-    <Compile Include="Composites\LogoutAction.cs" />
-    <Compile Include="Composites\LootAction.cs" />
-    <Compile Include="Composites\LootNPCsAction.cs" />
-    <Compile Include="Composites\MailAction.cs" />
-    <Compile Include="Composites\MoveToPoolAction.cs" />
-    <Compile Include="Composites\VendorAction.cs" />
-    <Compile Include="Composites\WaterWalkingAction.cs" />
+    <Compile Include="Coroutines.cs" />
+    <Compile Include="Coroutines.Combat.cs" >
+      <DependentUpon>Coroutines.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Coroutines.FaceWater.cs" >
+      <DependentUpon>Coroutines.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Coroutines.FindFishingSpot.cs" >
+      <DependentUpon>Coroutines.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Coroutines.Fishing.cs" >
+      <DependentUpon>Coroutines.cs</DependentUpon>
+    </Compile>    
+    <Compile Include="Coroutines.Gear.cs" >
+      <DependentUpon>Coroutines.cs</DependentUpon>
+    </Compile>    
+    <Compile Include="Coroutines.Lure.cs" >
+      <DependentUpon>Coroutines.cs</DependentUpon>
+    </Compile> 
+     <Compile Include="Coroutines.PathFollowing.cs" >
+      <DependentUpon>Coroutines.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Coroutines.Vendor.cs" >
+      <DependentUpon>Coroutines.cs</DependentUpon>
+    </Compile>    
+    <Compile Include="Extensions.cs" />
+    <Compile Include="LootFilters.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
