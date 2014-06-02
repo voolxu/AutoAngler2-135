@@ -40,7 +40,7 @@ namespace HighVoltz.AutoAngler
     {
         private readonly List<uint> _poolsToFish = new List<uint>();
 
-		private PathingType _pathingType;
+		private PathingType _pathingType = PathingType.Circle;
 	    private string _prevProfilePath;
 		private static int _lastUkTagCallTime;
         private static DateTime _botStartTime;
