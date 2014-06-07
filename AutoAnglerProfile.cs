@@ -2,15 +2,9 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Styx;
-using Styx.CommonBot;
-using Styx.CommonBot.POI;
 using Styx.CommonBot.Profiles;
 using Styx.Helpers;
-using Styx.Pathing;
-using Styx.WoWInternals;
 using Styx.WoWInternals.WoWObjects;
 
 namespace HighVoltz.AutoAngler
