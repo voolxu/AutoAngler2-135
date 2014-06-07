@@ -2,8 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -11,22 +9,15 @@ using System.Threading;
 using System.Windows.Forms;
 using System.Windows.Media;
 using System.Xml.Linq;
-using Bots.Gatherbuddy;
-using Bots.Grind;
 using CommonBehaviors.Actions;
 using Styx;
 using Styx.Common;
-using Styx.Common.Helpers;
 using Styx.CommonBot;
-using Styx.CommonBot.POI;
 using Styx.CommonBot.Profiles;
-using Styx.CommonBot.Routines;
 using Styx.Helpers;
 using Styx.WoWInternals;
 using Styx.WoWInternals.WoWObjects;
 using Styx.TreeSharp;
-using Action = Styx.TreeSharp.Action;
-using Profile = Styx.CommonBot.Profiles.Profile;
 
 namespace HighVoltz.AutoAngler
 {
