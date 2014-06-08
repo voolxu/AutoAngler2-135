@@ -33,8 +33,6 @@ namespace HighVoltz.AutoAngler
 			return false;
 		}
 
-		// ToDo Attach to UNIT_SPELLCAST_FAILED lua event and only face when cast failed.
-		// Lua.Events.AttachEvent("UNIT_SPELLCAST_FAILED", HandleInterrupted);
 		private static float? GetFaceWaterDirection()
 		{
 			WoWPoint playerLoc = StyxWoW.Me.Location;
