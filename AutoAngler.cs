@@ -47,6 +47,8 @@ namespace HighVoltz.AutoAngler
         }
 
 		internal bool LootFrameIsOpen { get; private set; }
+	
+		internal bool ShouldFaceWaterNow { get;  set; }
 
 		internal Dictionary<string, uint> FishCaught { get; private set; }
 		
@@ -138,6 +140,7 @@ namespace HighVoltz.AutoAngler
 	        LootTargeting.Instance.IncludeTargetsFilter += LootFilters.IncludeTargetsFilter;
             Lua.Events.AttachEvent("LOOT_OPENED", LootFrameOpenedHandler);
             Lua.Events.AttachEvent("LOOT_CLOSED", LootFrameClosedHandler);
+			Lua.Events.AttachEvent("UNIT_SPELLCAST_FAILED", UnitSpellCastFailedHandler);
         }
 
 
@@ -162,6 +165,7 @@ namespace HighVoltz.AutoAngler
 			LootTargeting.Instance.IncludeTargetsFilter -= LootFilters.IncludeTargetsFilter;
             Lua.Events.DetachEvent("LOOT_OPENED", LootFrameOpenedHandler);
             Lua.Events.DetachEvent("LOOT_CLOSED", LootFrameClosedHandler);
+			Lua.Events.DetachEvent("UNIT_SPELLCAST_FAILED", UnitSpellCastFailedHandler);
 
 			if (!string.IsNullOrEmpty(_prevProfilePath) && File.Exists(_prevProfilePath))
 				ProfileManager.LoadNew(_prevProfilePath);
@@ -180,6 +184,15 @@ namespace HighVoltz.AutoAngler
         {
             LootFrameIsOpen = true;
         }
+
+		private void UnitSpellCastFailedHandler(object sender, LuaEventArgs args)
+		{
+			var spell = GetWoWSpellFromSpellCastFailedArgs(args);
+			if (spell != null && spell.IsValid && spell.Name == "Fishing")
+				ShouldFaceWaterNow = true;	
+		}
+
+
 
         #endregion
 
@@ -253,6 +266,13 @@ namespace HighVoltz.AutoAngler
         }
 
         #endregion
+
+	    WoWSpell GetWoWSpellFromSpellCastFailedArgs(LuaEventArgs args)
+	    {
+		    if (args.Args.Length < 5)
+			    return null;
+			return WoWSpell.FromId((int)((double)args.Args[4]));
+	    }
 
         private WoWItem FindMainHand()
         {

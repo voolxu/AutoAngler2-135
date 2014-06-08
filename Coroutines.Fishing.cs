@@ -88,8 +88,13 @@ namespace HighVoltz.AutoAngler
 			if (await Applylure())
 				return true;
 
-			if (AutoAnglerBot.Instance.Profile.FishAtHotspot && await FaceWater())
-				return true;
+			if (!AutoAnglerSettings.Instance.Poolfishing 
+				&& AutoAnglerBot.Instance.ShouldFaceWaterNow)
+			{
+				AutoAnglerBot.Instance.ShouldFaceWaterNow = false;
+				if (await FaceWater())
+					return true;
+			}
 
 			// Checks if we got a bite and recasts if needed.
 			if (await CheckFishLine())

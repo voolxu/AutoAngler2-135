@@ -221,6 +221,7 @@ namespace HighVoltz.AutoAngler
 							AutoAnglerBot.Instance.FishCaught.Add(lootInfo.LootName, (uint)lootInfo.LootQuantity);
 					}
 					LootFrame.Instance.LootAll();
+					LootTimer.Stop();
 					await CommonCoroutines.SleepForLagDuration();
 				}
 				return true;
