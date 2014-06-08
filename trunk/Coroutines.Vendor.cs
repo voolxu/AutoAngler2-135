@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Buddy.Coroutines;
 using Styx;
+using Styx.CommonBot;
 using Styx.CommonBot.Coroutines;
 using Styx.CommonBot.Frames;
 using Styx.CommonBot.POI;
@@ -91,12 +92,7 @@ namespace HighVoltz.AutoAngler
 				return true;
 			}
 
-			await MailFrame.Instance
-				.SendMailWithManyAttachmentsCoroutine(
-					CharacterSettings.Instance.MailRecipient,
-					StyxWoW.Me.BagItems.Where(
-						i => !i.IsSoulbound && !i.IsConjured && ForceMailManager.Contains(i.Entry)).ToArray());
-
+			await Vendors.MailAllItemsCoroutine();
 
 			Vendor ven = ProfileManager.CurrentOuterProfile.VendorManager.GetClosestVendor();
 			BotPoi.Current = ven != null ? new BotPoi(ven, PoiType.Repair) : new BotPoi(PoiType.None);
