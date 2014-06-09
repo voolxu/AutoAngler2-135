@@ -38,7 +38,9 @@ namespace HighVoltz.AutoAngler
 			WoWPoint playerLoc = StyxWoW.Me.Location;
 			var sonar = new List<int>(TraceStep);
 			var tracelines = new WorldLine[TraceStep * 3];
-			bool[] tracelineRetVals;
+			bool[] tracelineWaterVals, traceLineTerrainVals;
+			WoWPoint[] waterHitPoints, terrainHitpoints;
+
 			for (int i = 0; i < TraceStep; i++)
 			{
 				// scans 10,15 and 20 yards from player for water at every 18 degress 
@@ -53,16 +55,26 @@ namespace HighVoltz.AutoAngler
 					tracelines[(i * 3) + n].End = lowPoint;
 				}
 			}
+
 			GameWorld.MassTraceLine(tracelines,
 				GameWorld.CGWorldFrameHitFlags.HitTestLiquid | GameWorld.CGWorldFrameHitFlags.HitTestLiquid2,
-				out tracelineRetVals);
+				out tracelineWaterVals, out waterHitPoints);
+
+			GameWorld.MassTraceLine(tracelines,
+				GameWorld.CGWorldFrameHitFlags.HitTestGroundAndStructures | GameWorld.CGWorldFrameHitFlags.HitTestMovableObjects,
+				out traceLineTerrainVals, out terrainHitpoints);
+
 			for (int i = 0; i < TraceStep; i++)
 			{
 				int scan = 0;
 				for (int n = 0; n < 3; n++)
 				{
-					if (tracelineRetVals[(i * 3) + n])
+					var idx = i*3 + n;
+					if (tracelineWaterVals[idx]
+						&& (!traceLineTerrainVals[idx] || terrainHitpoints[idx].Z < waterHitPoints[idx].Z))
+					{
 						scan++;
+					}
 				}
 				sonar.Add(scan);
 			}
