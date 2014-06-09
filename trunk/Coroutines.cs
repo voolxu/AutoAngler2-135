@@ -39,6 +39,17 @@ namespace HighVoltz.AutoAngler
 			get { return _deathBehavior ?? (_deathBehavior = LevelBot.CreateDeathBehavior()); }
 		}
 
+
+	    internal static void OnStart()
+	    {
+		    Gear_OnStart();
+	    }
+
+		internal static void OnStop()
+		{
+			Gear_OnStop();
+		}
+
 		public async static Task<bool> RootLogic()
 		{
 			CheckPulseTime();

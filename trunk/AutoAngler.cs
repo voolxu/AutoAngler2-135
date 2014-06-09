@@ -141,16 +141,14 @@ namespace HighVoltz.AutoAngler
             Lua.Events.AttachEvent("LOOT_OPENED", LootFrameOpenedHandler);
             Lua.Events.AttachEvent("LOOT_CLOSED", LootFrameClosedHandler);
 			Lua.Events.AttachEvent("UNIT_SPELLCAST_FAILED", UnitSpellCastFailedHandler);
+
+	        Coroutines.OnStart();
         }
 
 
         public override void Stop()
-        {            
-            if (Utility.EquipWeapons())
-				Log("Equipping weapons");
-
-	        if (Utility.EquipMainHat())
-				Log("Switched to my normal hat");
+        {
+			Coroutines.OnStop();
 
             Log("In {0} days, {1} hours and {2} minutes we have caught",
                 (DateTime.Now - _botStartTime).Days,
