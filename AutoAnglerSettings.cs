@@ -30,18 +30,18 @@ namespace HighVoltz.AutoAngler
 		[Setting, Styx.Helpers.DefaultValue(0)]
 		public int CurrentRevision { get; set; }
 
-		#region Weapon
+		#region Gear
 
 		[Setting, Styx.Helpers.DefaultValue(0u),
-		Description("Wowhead Id of the hat to switch to when not fishing"), Category("Weapon")]
+		Description("Wowhead Id of the hat to switch to when not fishing"), Category("Gear")]
 		public uint Hat { get; set; }
 
 		[Setting, Styx.Helpers.DefaultValue(0u), Description("Wowhead Id of the mainhand weapon to switch to when in combat"),
-		Category("Weapon")]
+		Category("Gear")]
 		public uint MainHand { get; set; }
 
 		[Setting, Styx.Helpers.DefaultValue(0u), Description("Wowhead Id of the offhand weapon to switch to when in combat"),
-		Category("Weapon")]
+		Category("Gear")]
 		public uint OffHand { get; set; }
 
 		#endregion

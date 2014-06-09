@@ -85,6 +85,9 @@ namespace HighVoltz.AutoAngler
 			if (await EquipPole())
 				return true;
 
+			if (await EquipHat())
+				return true;
+
 			if (await Applylure())
 				return true;
 

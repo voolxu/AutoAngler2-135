@@ -60,21 +60,7 @@ namespace HighVoltz.AutoAngler
 			}
 
 			// Fishing Hats
-			WoWItem head = StyxWoW.Me.Inventory.Equipped.Head;// StyxWoW.Me.Inventory.GetItemBySlot((uint)WoWEquipSlot.Head);
-			if (head == null || !Utility.FishingHatIds.Contains(head.Entry))
-			{
-				var fishingHat = StyxWoW.Me.BagItems.FirstOrDefault(i => i != null && i.IsValid && Utility.FishingHatIds.Contains(i.Entry));
-				if (fishingHat != null)
-				{
-					if (head != null)
-					{
-						AutoAnglerSettings.Instance.Hat = head.Entry;
-						AutoAnglerSettings.Instance.Save();
-					}
-					if (await EquipItem(fishingHat, WoWInventorySlot.Head))
-						return true;
-				}
-			}
+			WoWItem head = StyxWoW.Me.Inventory.Equipped.Head;
 
 			if (head != null && Utility.FishingHatIds.Contains(head.Entry))
 			{

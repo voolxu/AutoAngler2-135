@@ -10,6 +10,22 @@ namespace HighVoltz.AutoAngler
 {
 	static partial class Coroutines
 	{
+		private static bool _checkedForFishingHat;
+
+		static void Gear_OnStart()
+		{
+			_checkedForFishingHat = false;
+		}
+
+		static void Gear_OnStop()
+		{
+			if (Utility.EquipWeapons())
+				AutoAnglerBot.Log("Equipping weapons");
+
+			if (Utility.EquipMainHat())
+				AutoAnglerBot.Log("Switched to my normal hat");
+		}
+
 		public async static Task<bool> EquipPole()
 		{
 			var mainHand = StyxWoW.Me.Inventory.Equipped.MainHand;
@@ -29,15 +45,29 @@ namespace HighVoltz.AutoAngler
 			return await EquipItem(pole, WoWInventorySlot.MainHand);
 		}
 
-		public async static Task<bool> EquipItem(WoWItem item, WoWInventorySlot slot)
+		public async static Task<bool> EquipHat()
 		{
-			if (item == null || !item.IsValid)
+			if (_checkedForFishingHat || Me.Combat)
 				return false;
 
-			AutoAnglerBot.Log("Equipping {0}", item.SafeName);
-			Lua.DoString("ClearCursor()");
-			item.PickUp();
-			Lua.DoString(string.Format("PickupInventoryItem({0})", (int)slot + 1));
+			var hat = Utility.GetFishingHat();
+
+			if (hat != null && StyxWoW.Me.Inventory.Equipped.Head != hat)
+			{
+				if (!Utility.EquipItem(hat, WoWInventorySlot.Head) ||
+					!await Coroutine.Wait(4000, () => StyxWoW.Me.Inventory.Equipped.Head == hat))
+				{
+					return false;
+				}
+			}
+			_checkedForFishingHat = true;
+			return true;
+		}
+
+		public async static Task<bool> EquipItem(WoWItem item, WoWInventorySlot slot)
+		{
+			if (!Utility.EquipItem(item, slot))
+				return false;
 			await CommonCoroutines.SleepForLagDuration();
 			if (!await Coroutine.Wait(4000, () => !item.IsDisabled))
 				return false;

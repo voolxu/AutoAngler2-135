@@ -4,6 +4,7 @@ using Styx;
 using Styx.Common;
 using Styx.CommonBot;
 using Styx.CommonBot.POI;
+using Styx.WoWInternals;
 using Styx.WoWInternals.WoWObjects;
 
 namespace HighVoltz.AutoAngler
@@ -70,6 +71,13 @@ namespace HighVoltz.AutoAngler
 			return true;
 		}
 
+		internal static WoWItem GetFishingHat()
+		{
+			return StyxWoW.Me.BagItems.Where(i => FishingHatIds.Contains(i.Entry))
+				.OrderByDescending(i => i.ItemInfo.Level)
+				.FirstOrDefault();
+		}
+
 		public static bool EquipMainHat()
 		{
 			if (StyxWoW.Me.Combat)
@@ -117,6 +125,17 @@ namespace HighVoltz.AutoAngler
 			return true;
 		}
 
+		internal static bool EquipItem(WoWItem item, WoWInventorySlot slot)
+		{
+			if (item == null || !item.IsValid)
+				return false;
+
+			AutoAnglerBot.Log("Equipping {0}", item.SafeName);
+			Lua.DoString("ClearCursor()");
+			item.PickUp();
+			Lua.DoString(string.Format("PickupInventoryItem({0})", (int)slot + 1));
+			return true;
+		}
 
 		public static void BlacklistPool(WoWGameObject pool, TimeSpan time, string reason)
 		{
