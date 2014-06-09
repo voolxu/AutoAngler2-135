@@ -147,7 +147,7 @@ namespace HighVoltz.AutoAngler
 			{
 				WoWGameObject bobber = ObjectManager.GetObjectsOfType<WoWGameObject>()
 						.FirstOrDefault(o => o.IsValid && o.SubType == WoWGameObjectType.FishingNode &&
-											 o.CreatedBy.Guid == Me.Guid);
+											 o.CreatedByGuid == Me.Guid);
 				
 				if (bobber != null)
 				{
