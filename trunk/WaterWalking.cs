@@ -41,32 +41,13 @@ namespace HighVoltz.AutoAngler
 		{
 			get
 			{
-				// DKs have 2 Path of Frost auras. only one can be stored in WoWAuras at any time. 
-				return IsAuraActive("Levitate", MinimumWaterWalkingTimeLeft)
-						|| IsAuraActive("Anglers Fishing Raft", MinimumWaterWalkingTimeLeft)
-						|| IsAuraActive("Water Walking", MinimumWaterWalkingTimeLeft)
-						|| IsAuraActive("Unending Breath", MinimumWaterWalkingTimeLeft)
-						|| IsAuraActive("Bipsi's Bobbing Berg", MinimumWaterWalkingTimeLeft)
-						|| IsAuraActive(PathOfFrostSpellId, MinimumWaterWalkingTimeLeft)
-						|| IsAuraActive("Surface Trot", MinimumWaterWalkingTimeLeft)
-						// Only active when in the Inkgill Mere area in MOP
-						|| IsAuraActive("Blessing of the Inkgill");
+				return (from aura in StyxWoW.Me.GetAllAuras()
+					let spell = aura.Spell
+					where spell != null && spell.IsValid && spell.SpellEffects.Any(e => e.AuraType == WoWApplyAuraType.WaterWalk)
+					let timeLeft = aura.TimeLeft
+					where timeLeft == TimeSpan.Zero || timeLeft >= MinimumWaterWalkingTimeLeft
+					select aura).Any();
 			}
-		}
-
-		static bool IsAuraActive(string auraName, TimeSpan? minTimeLeft = null)
-		{
-			return IsAuraActive(StyxWoW.Me.GetAuraByName(auraName), minTimeLeft);
-		}
-
-		static bool IsAuraActive(int auraId, TimeSpan? minTimeLeft = null)
-		{
-			return IsAuraActive(StyxWoW.Me.GetAuraById(auraId), minTimeLeft);
-		}
-
-		static bool IsAuraActive(WoWAura aura, TimeSpan? minTimeLeft = null)
-		{
-			return aura != null && (minTimeLeft == null || aura.TimeLeft >= minTimeLeft);
 		}
 
 		public static async Task<bool> Cast()
@@ -129,46 +110,6 @@ namespace HighVoltz.AutoAngler
 			}
 			if (casted)
 				await CommonCoroutines.SleepForLagDuration();
-
-			if (StyxWoW.Me.IsSwimming)
-			{
-				AutoAnglerBot.Log("Jumping up on water surface since I'm swimming but have water walking");
-				var sw = Stopwatch.StartNew();
-				while (StyxWoW.Me.IsSwimming)
-				{
-					if (StyxWoW.Me.IsBeingAttacked)
-						return false;
-
-					if (sw.ElapsedMilliseconds > 15000)
-					{
-						var pool = BotPoi.Current.AsObject as WoWGameObject;
-						if (pool != null)
-						{
-							AutoAnglerBot.Log("Moving to another spot since couldn't jump on top.");
-							Coroutines.RemovePointAtTop(pool);								
-						}
-						break;
-					}
-
-					try
-					{
-						// Make sure the player's pitch is not pointing down causing player to not being able to 
-						// water walk
-						Lua.DoString("VehicleAimIncrement(1)");
-						WoWMovement.Move(WoWMovement.MovementDirection.JumpAscend);
-						await Coroutine.Wait(15000, () => StyxWoW.Me.IsFalling || !StyxWoW.Me.IsSwimming);
-					}
-					finally
-					{
-						WoWMovement.MoveStop(WoWMovement.MovementDirection.JumpAscend);
-					}
-					if (await Coroutine.Wait(2000, () => !StyxWoW.Me.IsSwimming && !StyxWoW.Me.IsFalling))
-					{
-						AutoAnglerBot.Log("Successfuly landed on water surface.");
-						break;
-					}
-				}
-			}
 
 			return casted;
 		}
