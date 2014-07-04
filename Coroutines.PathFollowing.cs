@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Styx;
 using Styx.CommonBot;
+using Styx.CommonBot.Coroutines;
 using Styx.CommonBot.POI;
 using Styx.Pathing;
 
@@ -10,10 +11,11 @@ namespace HighVoltz.AutoAngler
 	{
 		private async static Task<bool> FollowPath()
 		{
-			if (!AutoAnglerSettings.Instance.Poolfishing && !AutoAnglerBot.Instance.Profile.FishAtHotspot)
+			if (!AutoAnglerSettings.Instance.Poolfishing && !AutoAnglerBot.Instance.Profile.FishAtHotspot )
 				return false;
 
-			if (!AutoAnglerBot.Instance.Profile.FishAtHotspot && BotPoi.Current.Type == PoiType.Harvest)
+			if (!AutoAnglerBot.Instance.Profile.FishAtHotspot 
+				&& (BotPoi.Current.Type == PoiType.Harvest || LootTargeting.Instance.FirstObject != null))
 				return false;
 
 			if (await CheckLootFrame())
@@ -43,8 +45,14 @@ namespace HighVoltz.AutoAngler
 
 			if (AutoAnglerSettings.Instance.Fly)
 			{
-				if (!StyxWoW.Me.Mounted)
+				if (!StyxWoW.Me.Mounted && Flightor.MountHelper.CanMount)
 				{
+					var zenFlightAura = StyxWoW.Me.GetAuraByName("Zen Flight");
+					if (zenFlightAura != null)
+					{
+						zenFlightAura.TryCancelAura();
+						await CommonCoroutines.SleepForLagDuration();
+					}
 					Flightor.MountHelper.MountUp();
 					return true;
 				}

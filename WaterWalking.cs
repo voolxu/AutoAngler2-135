@@ -10,6 +10,7 @@ using Styx.CommonBot;
 using Styx.CommonBot.Coroutines;
 using Styx.CommonBot.POI;
 using Styx.Helpers;
+using Styx.Patchables;
 using Styx.Pathing;
 using Styx.WoWInternals;
 using Styx.WoWInternals.WoWObjects;
@@ -19,19 +20,20 @@ namespace HighVoltz.AutoAngler
 	public class WaterWalking
 	{
 		private static readonly WaitTimer RecastTimer = WaitTimer.FiveSeconds;
-
 		public static bool CanCast
 		{
 			get
 			{
 				return AutoAnglerSettings.Instance.UseWaterWalking &&
-					   (SpellManager.HasSpell("Levitate") || // priest levitate
-						SpellManager.HasSpell("Water Walking") || // shaman water walking
-						SpellManager.HasSpell(PathOfFrostSpellId) || // Dk Path of frost
-						SpellManager.HasSpell("Soulburn") || // Affliction Warlock
-						StyxWoW.Me.HasAura("Still Water") || // hunter with water strider pet.
-						Utility.IsItemInBag(ElixirOfWaterWalkingId) || //isItemInBag(8827);
-						Utility.IsItemInBag(FishingRaftId)); // Anglers Fishing Raft
+					   (SpellManager.HasSpell("Levitate")  // priest levitate
+						|| SpellManager.HasSpell("Water Walking")  // shaman water walking
+						|| SpellManager.HasSpell(PathOfFrostSpellId)  // Dk Path of frost
+						|| SpellManager.HasSpell("Soulburn")  // Affliction Warlock
+						|| StyxWoW.Me.HasAura("Still Water")  // hunter with water strider pet.
+						|| Utility.IsItemInBag(ElixirOfWaterWalkingId)  //isItemInBag(8827);
+						|| Utility.IsItemInBag(FishingRaftId) // Anglers Fishing Raft
+						|| SpellManager.HasSpell("Zen Flight") // Monk spell from having Glyph of Zen Flight
+						); 
 			}
 		}
 
@@ -43,7 +45,8 @@ namespace HighVoltz.AutoAngler
 			{
 				return (from aura in StyxWoW.Me.GetAllAuras()
 					let spell = aura.Spell
-					where spell != null && spell.IsValid && spell.SpellEffects.Any(e => e.AuraType == WoWApplyAuraType.WaterWalk)
+					where spell != null && spell.IsValid
+					&& (spell.Id == ZenFlightSpellId || spell.SpellEffects.Any(e => e.AuraType == WoWApplyAuraType.WaterWalk))
 					let timeLeft = aura.TimeLeft
 					where timeLeft == TimeSpan.Zero || timeLeft >= MinimumWaterWalkingTimeLeft
 					select aura).Any();
@@ -61,6 +64,10 @@ namespace HighVoltz.AutoAngler
 				int waterwalkingSpellID = 0;
 				switch (StyxWoW.Me.Class)
 				{
+					case WoWClass.Monk:
+						if (SpellManager.HasSpell("Zen Flight") && !StyxWoW.Me.IsSwimming)
+							waterwalkingSpellID = ZenFlightSpellId;
+						break;
 					case WoWClass.Priest:
 						waterwalkingSpellID = LevitateSpellId;
 						break;
@@ -124,6 +131,7 @@ namespace HighVoltz.AutoAngler
 		private const int UnendingBreathSpellId = 5697;
 		private const int PathOfFrostSpellId = 3714;
 		private const int LevitateSpellId = 1706;
+		private const int ZenFlightSpellId = 125883;
 
 		#endregion
 
