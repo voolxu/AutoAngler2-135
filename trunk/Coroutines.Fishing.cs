@@ -260,7 +260,19 @@ namespace HighVoltz.AutoAngler
 					// water walk
 					Lua.DoString("VehicleAimIncrement(1)");
 					WoWMovement.Move(WoWMovement.MovementDirection.JumpAscend);
-					await Coroutine.Wait(15000, () => StyxWoW.Me.IsFalling || !StyxWoW.Me.IsSwimming);
+					await Coroutine.Wait(15000, () => Me.IsFalling || !Me.IsSwimming);
+					if (SpellManager.HasSpell("Zen Flight") && AutoAnglerSettings.Instance.UseWaterWalking)
+					{
+						var timer = new WaitTimer(TimeSpan.FromSeconds(3));
+						timer.Reset();
+						while (!Me.IsSwimming && !Me.HasAura("Zen Flight") && !timer.IsFinished)
+						{
+							SpellManager.Cast("Zen Flight");
+							await Coroutine.Yield();
+						}
+						if (Me.HasAura("Zen Flight"))
+							await Coroutine.Sleep(200);
+					}
 				}
 				finally
 				{
