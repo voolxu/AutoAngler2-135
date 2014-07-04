@@ -63,7 +63,7 @@ namespace HighVoltz.AutoAngler
 
 			// refresh water walking if needed
 			if (!Me.Mounted && WaterWalking.CanCast 
-				&& (!WaterWalking.IsActive || StyxWoW.Me.IsSwimming)
+				&& !WaterWalking.IsActive
 				&& await WaterWalking.Cast())
 			{
 				return true;
@@ -99,6 +99,24 @@ namespace HighVoltz.AutoAngler
 					return true;
 			}
 
+			if (Me.Mounted && await CommonCoroutines.Dismount("Fishing"))
+				return true;
+
+			if (!await Coroutine.Wait(10000, () => !Me.IsFalling))
+			{
+				AutoAnglerBot.Log("Falling for 10 seconds; I don't think this will end good.");
+				return false;
+			}
+
+			if (Me.IsSwimming)
+				await JumpOnWaterSurface();
+
+			if (Me.IsMoving)
+			{
+				WoWMovement.MoveStop();
+				if (!await Coroutine.Wait(4000, () => !Me.IsMoving))
+					return false;
+			}
 			// Checks if we got a bite and recasts if needed.
 			if (await CheckFishLine())
 				return true;
@@ -110,22 +128,6 @@ namespace HighVoltz.AutoAngler
 		{
 			if (AutoAnglerSettings.Instance.Poolfishing && BotPoi.Current.Type != PoiType.Harvest)
 				return false;
-
-			if (Me.Mounted && await CommonCoroutines.Dismount("Fishing"))
-				return true;
-
-			if (!await Coroutine.Wait(10000, () => !Me.IsFalling))
-			{
-				AutoAnglerBot.Log("Falling for 10 seconds; I don't think this will end good.");
-				return false;
-			}
-
-			if (Me.IsMoving)
-			{
-				WoWMovement.MoveStop();
-				if (!await Coroutine.Wait(4000, () => !Me.IsMoving))
-					return false;
-			}
 
 			var pool = BotPoi.Current.AsObject as WoWGameObject;
 			if (AutoAnglerSettings.Instance.Poolfishing)
@@ -230,5 +232,46 @@ namespace HighVoltz.AutoAngler
 			return NormalFishingPoolRadius*pool.Scale;
 		}
 
+		static async Task JumpOnWaterSurface()
+		{
+			if (!Me.IsSwimming)
+				return;
+			AutoAnglerBot.Log("Jumping up on water surface since I'm swimming but have water walking");
+			var sw = Stopwatch.StartNew();
+			while (StyxWoW.Me.IsSwimming)
+			{
+				if (StyxWoW.Me.IsBeingAttacked)
+					return;
+
+				if (sw.ElapsedMilliseconds > 15000)
+				{
+					var pool = BotPoi.Current.AsObject as WoWGameObject;
+					if (pool != null)
+					{
+						AutoAnglerBot.Log("Moving to another spot since couldn't jump on top.");
+						RemovePointAtTop(pool);
+					}
+					break;
+				}
+
+				try
+				{
+					// Make sure the player's pitch is not pointing down causing player to not being able to 
+					// water walk
+					Lua.DoString("VehicleAimIncrement(1)");
+					WoWMovement.Move(WoWMovement.MovementDirection.JumpAscend);
+					await Coroutine.Wait(15000, () => StyxWoW.Me.IsFalling || !StyxWoW.Me.IsSwimming);
+				}
+				finally
+				{
+					WoWMovement.MoveStop(WoWMovement.MovementDirection.JumpAscend);
+				}
+				if (await Coroutine.Wait(2000, () => !StyxWoW.Me.IsSwimming && !StyxWoW.Me.IsFalling))
+				{
+					AutoAnglerBot.Log("Successfuly landed on water surface.");
+					return;
+				}
+			}
+		}
 	}
 }

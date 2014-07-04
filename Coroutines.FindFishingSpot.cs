@@ -66,11 +66,11 @@ namespace HighVoltz.AutoAngler
 							return true;
 					}
 					
-					if (!Me.Mounted && !SpellManager.GlobalCooldown)
-					{
-						Flightor.MountHelper.MountUp();
-						return true;
-					}
+					//if (!Me.Mounted && !SpellManager.GlobalCooldown)
+					//{
+					//	Flightor.MountHelper.MountUp();
+					//	return true;
+					//}
 					Flightor.MoveTo(WoWMathHelper.CalculatePointFrom(myLoc, moveto, -1f));
 					return true;
 				}
@@ -101,7 +101,7 @@ namespace HighVoltz.AutoAngler
 				await CommonCoroutines.Dismount("Fishing");
 
 			// can't fish while swimming..
-			if (Me.IsSwimming && !WaterWalking.CanCast)
+			if (Me.IsSwimming && !WaterWalking.IsActive && !WaterWalking.CanCast)
 			{
 				AutoAnglerBot.Debug("Moving to new PoolPoint since I'm swimming at current PoolPoint");
 				if (!RemovePointAtTop(pool))
@@ -158,7 +158,7 @@ namespace HighVoltz.AutoAngler
 						slopetraces.AddRange(GetQuadSloopTraceLines(hitPoints[i]));
 						testPoints.Add(hitPoints[i]);
 					}
-					else if (WaterWalking.CanCast)
+					else if (WaterWalking.IsActive || WaterWalking.CanCast)
 					{
 						traceLine[i].End.Z = pool.Z + 1;
 						poolPoints.Add(traceLine[i].End);
