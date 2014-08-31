@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.30501.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoAngler2", "AutoAngler2.csproj", "{A1759A9F-89B9-406E-9B5A-7EC14ABC8338}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoAngler", "AutoAngler.csproj", "{A1759A9F-89B9-406E-9B5A-7EC14ABC8338}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
