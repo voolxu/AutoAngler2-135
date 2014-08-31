@@ -21,14 +21,11 @@ namespace HighVoltz.AutoAngler
 		}
 
 
-		[Setting, Styx.Helpers.DefaultValue("")]
+		[Setting, Styx.Helpers.DefaultValue(""), Browsable(false)]
 		public string LastLoadedProfile { get; set; }
 
 		[Setting, Styx.Helpers.DefaultValue(false), Description("If set to true bot will attempt to loot any dead lootable NPCs")]
 		public bool LootNPCs { get; set; }
-
-		[Setting, Styx.Helpers.DefaultValue(0)]
-		public int CurrentRevision { get; set; }
 
 		#region Gear
 
@@ -108,9 +105,6 @@ namespace HighVoltz.AutoAngler
 			), Category("Advanced")]
 		public float PoolRangeStep { get; set; }
 
-		[Setting, Styx.Helpers.DefaultValue(true),
-		Description("Automatically receive updates if true"), Category("Advanced")]
-		public bool AutoUpdate { get; set; }
 		#endregion
 	}
 }

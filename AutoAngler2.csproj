@@ -38,7 +38,8 @@
       <HintPath>..\..\Honorbuddy\GreyMagic.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Honorbuddy">
+    <Reference Include="Honorbuddy, Version=2.5.11412.747, Culture=neutral, PublicKeyToken=50a565ab5c01ae50, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Honorbuddy\Honorbuddy.exe</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
@@ -100,7 +101,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SVN.cs" />
     <Compile Include="SvnBase.cs" />
-    <Compile Include="Updater.cs" />
     <Compile Include="Util.cs" />
     <Compile Include="WaterWalking.cs" />
   </ItemGroup>
@@ -114,8 +114,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(ProjectDir)*.cs" "C:\Buddy\Projects\Honorbuddy\Honorbuddy\bin\Debug\Bots\AutoAngler2" /I /S /Y /D
-xcopy "$(ProjectDir)*.xml" "C:\Buddy\Projects\Honorbuddy\Honorbuddy\bin\Debug\Bots\AutoAngler2" /I /S /Y /D</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>SubWCRev.exe $(ProjectDir) $(ProjectDir)SVN.template $(ProjectDir)\SVN.cs</PreBuildEvent>

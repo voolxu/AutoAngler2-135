@@ -12,6 +12,7 @@ using System.Xml.Linq;
 using CommonBehaviors.Actions;
 using Styx;
 using Styx.Common;
+using Styx.Common.Helpers;
 using Styx.CommonBot;
 using Styx.CommonBot.Profiles;
 using Styx.Helpers;
@@ -33,7 +34,7 @@ namespace HighVoltz.AutoAngler
 
 		private PathingType _pathingType = PathingType.Circle;
 	    private string _prevProfilePath;
-		private static int _lastUkTagCallTime;
+	    private static WaitTimer _loadProfileTimer = new WaitTimer(TimeSpan.FromSeconds(1));
         private static DateTime _botStartTime;
 
         internal static readonly string BotPath = GetBotPath();
@@ -120,12 +121,6 @@ namespace HighVoltz.AutoAngler
 			            ProfileManager.LoadNew(AutoAnglerSettings.Instance.LastLoadedProfile);
 	            else
 		            ProfileManager.LoadEmpty();
-
-	            if (AutoAnglerSettings.Instance.AutoUpdate)
-	            {
-		            // check for Autoangler updates
-		            new Thread(Updater.CheckForUpdate) {IsBackground = true}.Start();
-	            }
             }
             catch (Exception ex)
             {
@@ -215,13 +210,16 @@ namespace HighVoltz.AutoAngler
 
         public void Profile_OnUnknownProfileElement(object sender, UnknownProfileElementEventArgs e)
         {
+			// hackish way to set variables to default states before loading new profile... wtb OnNewOuterProfileLoading event
+			if (_loadProfileTimer.IsFinished)
+			{
+				_poolsToFish.Clear();
+				_pathingType = PathingType.Circle;
+				_loadProfileTimer.Reset();
+			}
+
             if (e.Element.Name == "FishingSchool")
             {
-                // hackish way to clear my list of pool before loading new profile... wtb OnNewOuterProfileLoading event
-                if (Environment.TickCount - _lastUkTagCallTime > 4000)
-					_poolsToFish.Clear();
-
-                _lastUkTagCallTime = Environment.TickCount;
                 XAttribute entryAttrib = e.Element.Attribute("Entry");
                 if (entryAttrib != null)
                 {
