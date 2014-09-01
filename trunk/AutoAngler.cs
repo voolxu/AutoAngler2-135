@@ -37,7 +37,6 @@ namespace HighVoltz.AutoAngler
 	    private static WaitTimer _loadProfileTimer = new WaitTimer(TimeSpan.FromSeconds(1));
         private static DateTime _botStartTime;
 
-        internal static readonly string BotPath = GetBotPath();
         internal static readonly Version Version = new Version(2, new Svn().Revision);
 
         public AutoAnglerBot()
@@ -130,6 +129,7 @@ namespace HighVoltz.AutoAngler
 
         public override void Start()
         {
+	        DumpConfiguration();
             _botStartTime = DateTime.Now;
             FishCaught = new Dictionary<string, uint>();
 	        LootTargeting.Instance.IncludeTargetsFilter += LootFilters.IncludeTargetsFilter;
@@ -323,32 +323,36 @@ namespace HighVoltz.AutoAngler
 
         internal static void Log(string format, params object[] args)
         {
-            Logging.Write(Colors.DodgerBlue, String.Format("AutoAngler[{0}]: {1}", Version, format), args);
+            Logging.Write(Colors.DodgerBlue, String.Format("AutoAngler {0}: {1}", Version, format), args);
         }
 
         internal static void Err(string format, params object[] args)
         {
-            Logging.Write(Colors.Red, String.Format("AutoAngler[{0}]: {1}", Version, format), args);
+            Logging.Write(Colors.Red, String.Format("AutoAngler {0}: {1}", Version, format), args);
         }
 
         internal static void Debug(string format, params object[] args)
         {
-            Logging.WriteDiagnostic(Colors.DodgerBlue, String.Format("AutoAngler[{0}]: {1}", Version, format), args);
+            Logging.WriteDiagnostic(Colors.DodgerBlue, String.Format("AutoAngler {0}: {1}", Version, format), args);
         }
 
-        private static string GetBotPath()
-        { // taken from Singular.
-            // bit of a hack, but location of source code for assembly is only.
-            var asmName = Assembly.GetExecutingAssembly().GetName().Name;
-            var len = asmName.LastIndexOf("_", StringComparison.Ordinal);
-            var folderName = asmName.Substring(0, len);
+	    private void DumpConfiguration()
+	    {
+		    Debug("AvoidLava: {0}", AutoAnglerSettings.Instance.AvoidLava);
+			Debug("Fly: {0}", AutoAnglerSettings.Instance.Fly);
+			Debug("LootNPCs: {0}", AutoAnglerSettings.Instance.LootNPCs);
+			
+			Debug("Hat Id: {0}", AutoAnglerSettings.Instance.Hat);
+			Debug("MainHand Id: {0}", AutoAnglerSettings.Instance.MainHand);
+			Debug("OffHand Id: {0}", AutoAnglerSettings.Instance.OffHand);
 
-            var botsPath = GlobalSettings.Instance.BotsPath;
-            if (!Path.IsPathRooted(botsPath))
-            {
-                botsPath = Path.Combine(Utilities.AssemblyDirectory, botsPath);
-            }
-            return Path.Combine(botsPath, folderName);
-        }
+			Debug("MaxFailedCasts: {0}", AutoAnglerSettings.Instance.MaxFailedCasts);
+			Debug("MaxTimeAtPool: {0}", AutoAnglerSettings.Instance.MaxTimeAtPool);
+			Debug("NinjaNodes: {0}", AutoAnglerSettings.Instance.NinjaNodes);
+			Debug("PathPrecision: {0}", AutoAnglerSettings.Instance.PathPrecision);
+			Debug("Poolfishing: {0}", AutoAnglerSettings.Instance.Poolfishing);
+			Debug("TraceStep: {0}", AutoAnglerSettings.Instance.TraceStep);
+			Debug("UseWaterWalking: {0}", AutoAnglerSettings.Instance.UseWaterWalking);
+	    }
     }
 }
