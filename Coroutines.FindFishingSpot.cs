@@ -171,12 +171,11 @@ namespace HighVoltz.AutoAngler
 				{
 					bool[] slopelinesRetVals;
 					GameWorld.MassTraceLine(slopetraces.ToArray(),
-											GameWorld.CGWorldFrameHitFlags.HitTestGroundAndStructures
-											| GameWorld.CGWorldFrameHitFlags.HitTestMovableObjects,
+											TraceLineHitFlags.Collision,
 											out slopelinesRetVals, out slopeHits);
 					if (AutoAnglerSettings.Instance.AvoidLava)
 					{
-						GameWorld.MassTraceLine(slopetraces.ToArray(), GameWorld.CGWorldFrameHitFlags.HitTestLiquid2,
+						GameWorld.MassTraceLine(slopetraces.ToArray(), TraceLineHitFlags.LiquidAll,
 												out lavaRetVals);
 					}
 				}
@@ -194,9 +193,7 @@ namespace HighVoltz.AutoAngler
 						losLine[i2].Start = point;
 						losLine[i2].End = pool.Location;
 					}
-					GameWorld.MassTraceLine(losLine, GameWorld.CGWorldFrameHitFlags.HitTestGroundAndStructures
-						| GameWorld.CGWorldFrameHitFlags.HitTestMovableObjects,
-											out tracelineRetVals);
+					GameWorld.MassTraceLine(losLine, TraceLineHitFlags.Collision, out tracelineRetVals);
 					for (int i2 = poolPoints.Count - 1; i2 >= 0; i2--)
 					{
 						if (tracelineRetVals[i2])

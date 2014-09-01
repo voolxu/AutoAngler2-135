@@ -49,13 +49,6 @@ namespace HighVoltz.AutoAngler
 		Description("Set this to true if you want to fish from pools, otherwise set to false."), Category("Fishing")]
 		public bool Poolfishing { get; set; }
 
-		[Setting, Styx.Helpers.DefaultValue(PathingType.Circle),
-		Description(
-			"In Circle mode, bot goes from 1st waypoint to last then jump back to 1st . In Bounce mode bot goes from 1st waypoint to last then it goes in reverse from bottom to top"
-			),
-		Category("Fishing")]
-		public PathingType PathingType { get; set; }
-
 		[Setting, Styx.Helpers.DefaultValue(true),
 		Description("Set to true to enable flying,false to use ground based navigation"), Category("Fishing")]
 		public bool Fly { get; set; }
