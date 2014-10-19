@@ -21,7 +21,7 @@ namespace HighVoltz.AutoAngler
 
 		// used to auto blacklist a pool if it takes too long to get to a point.
 		public static readonly WaitTimer MoveToPoolTimer = new WaitTimer(TimeSpan.FromSeconds(25));
-		private static ulong _lastPoolGuid;
+		private static WoWGuid _lastPoolGuid;
 
 		public async static Task<bool> MoveToPool(WoWGameObject pool)
 		{
@@ -142,10 +142,7 @@ namespace HighVoltz.AutoAngler
 				}
 				WoWPoint[] hitPoints;
 				bool[] tracelineRetVals;
-				GameWorld.MassTraceLine(traceLine,
-					GameWorld.CGWorldFrameHitFlags.HitTestGroundAndStructures
-					| GameWorld.CGWorldFrameHitFlags.HitTestMovableObjects,
-					out tracelineRetVals, out hitPoints);
+                GameWorld.MassTraceLine(traceLine, TraceLineHitFlags.Collision, out tracelineRetVals, out hitPoints);
 	
 				// what I'm doing here is compare the elevation of 4 corners around a point with 
 				// that point's elevation to determine if that point is too steep to stand on.
