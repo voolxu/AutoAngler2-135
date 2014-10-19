@@ -136,9 +136,6 @@ namespace HighVoltz.AutoAngler
 		    if (activeMover == null)
 			    return false;
 
-			if (activeMover.Mounted)
-				Mount.Dismount();
-
 		    var hearthStone =
 			    Me.BagItems.FirstOrDefault(
 				    h => h != null && h.IsValid && h.Entry == 6948 

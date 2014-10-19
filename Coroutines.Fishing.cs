@@ -36,7 +36,7 @@ namespace HighVoltz.AutoAngler
 
 		private static readonly Stopwatch TimeAtPoolTimer = new Stopwatch();
 		private static int _castCounter;
-		private static ulong _lastVisitedPoolGuid;
+		private static WoWGuid _lastVisitedPoolGuid;
 		public static int DelayAfterBobberTriggerMs
 		{
 			get

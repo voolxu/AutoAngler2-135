@@ -56,13 +56,9 @@ namespace HighVoltz.AutoAngler
 				}
 			}
 
-			GameWorld.MassTraceLine(tracelines,
-				GameWorld.CGWorldFrameHitFlags.HitTestLiquid | GameWorld.CGWorldFrameHitFlags.HitTestLiquid2,
-				out tracelineWaterVals, out waterHitPoints);
+			GameWorld.MassTraceLine(tracelines, TraceLineHitFlags.LiquidAll, out tracelineWaterVals, out waterHitPoints);
 
-			GameWorld.MassTraceLine(tracelines,
-				GameWorld.CGWorldFrameHitFlags.HitTestGroundAndStructures | GameWorld.CGWorldFrameHitFlags.HitTestMovableObjects,
-				out traceLineTerrainVals, out terrainHitpoints);
+            GameWorld.MassTraceLine(tracelines, TraceLineHitFlags.Collision, out traceLineTerrainVals, out terrainHitpoints);
 
 			for (int i = 0; i < TraceStep; i++)
 			{
